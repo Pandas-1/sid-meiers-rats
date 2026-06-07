@@ -1,125 +1,103 @@
-CREATE TABLE "CityDetails"(
-    "UserID" INTEGER NOT NULL,
-    "Resource1" BIGINT NOT NULL,
-    "Resource2" BIGINT NOT NULL,
-    "MaxResource1" BIGINT NOT NULL,
-    "MaxResource2" BIGINT NOT NULL,
-    "MaxTroopArmySize" BIGINT NOT NULL,
-    "LastUpdated" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
-    "MaxDefenceBuildings" BIGINT NOT NULL,
-    "MaxResourceBuildings" BIGINT NOT NULL
+CREATE TABLE users (
+    user_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    username TEXT NOT NULL UNIQUE,
+    trophies INTEGER NOT NULL DEFAULT 0,
+    base_level INTEGER NOT NULL DEFAULT 1,
+    xp INTEGER NOT NULL DEFAULT 0,
+    last_played TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+    password_hash TEXT NOT NULL
 );
-ALTER TABLE
-    "CityDetails" ADD PRIMARY KEY("UserID");
-CREATE TABLE "Users"(
-    "UserID" INTEGER NOT NULL,
-    "Username" TEXT NOT NULL,
-    "Trophies" INTEGER NOT NULL,
-    "BaseLevel" INTEGER NOT NULL,
-    "Xp" INTEGER NOT NULL,
-    "LastPlayed" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
-    "PasswordHash" TEXT NOT NULL
+
+CREATE TABLE city_details (
+    user_id INTEGER NOT NULL,
+    resource1 BIGINT NOT NULL DEFAULT 0,
+    resource2 BIGINT NOT NULL DEFAULT 0,
+    max_resource1 BIGINT NOT NULL DEFAULT 500,
+    max_resource2 BIGINT NOT NULL DEFAULT 500,
+    max_troop_army_size BIGINT NOT NULL DEFAULT 20,
+    last_updated TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+    max_defence_buildings BIGINT NOT NULL DEFAULT 3,
+    max_resource_buildings BIGINT NOT NULL DEFAULT 3,
+    PRIMARY KEY (user_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
-ALTER TABLE
-    "Users" ADD PRIMARY KEY("UserID");
-ALTER TABLE
-    "Users" ADD CONSTRAINT "users_username_unique" UNIQUE("Username");
-CREATE TABLE "TroopDetails"(
-    "TroopID" INTEGER NOT NULL,
-    "Name" TEXT NOT NULL,
-    "BaseCost" INTEGER NOT NULL,
-    "TroopAttackPower" INTEGER NOT NULL,
-    "BuildingAttackPower" INTEGER NOT NULL,
-    "Defence" INTEGER NOT NULL,
-    "Range" INTEGER NOT NULL,
-    "AttributeStrength" INTEGER NOT NULL,
-    "AttributeWeakness" INTEGER NOT NULL,
-    "TroopArmySpace" INTEGER NOT NULL,
-    "MovementSpeed" INTEGER NOT NULL,
-    "MaxLevel" INTEGER[] NOT NULL
+
+CREATE TABLE troop_details (
+    troop_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    base_cost INTEGER NOT NULL,
+    troop_attack_power INTEGER NOT NULL,
+    building_attack_power INTEGER NOT NULL,
+    defence INTEGER NOT NULL,
+    range INTEGER NOT NULL,
+    attribute_strength INTEGER NOT NULL,
+    attribute_weakness INTEGER NOT NULL,
+    troop_army_space INTEGER NOT NULL,
+    movement_speed INTEGER NOT NULL,
+    max_level INTEGER[] NOT NULL
 );
-ALTER TABLE
-    "TroopDetails" ADD PRIMARY KEY("TroopID");
-ALTER TABLE
-    "TroopDetails" ADD CONSTRAINT "troopdetails_name_unique" UNIQUE("Name");
-CREATE TABLE "BuildingDetails"(
-    "BuildingID" INTEGER NOT NULL,
-    "Name" TEXT NOT NULL,
-    "Typeint" CHAR(255) NOT NULL,
-    "Production" INTEGER NOT NULL,
-    "Scaling" INTEGER NOT NULL,
-    "HealthBar" INTEGER NOT NULL,
-    "Width" INTEGER NOT NULL,
-    "Height" INTEGER NOT NULL,
-    "DefenceAttack" INTEGER NOT NULL,
-    "DefenceRange" INTEGER NOT NULL,
-    "MaxLevel" INTEGER[] NOT NULL,
-    "CostResource1" INTEGER NOT NULL,
-    "CostResource2" INTEGER NOT NULL
+
+CREATE TABLE building_details (
+    building_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    building_type VARCHAR(50) NOT NULL,
+    production INTEGER NOT NULL DEFAULT 0,
+    scaling INTEGER NOT NULL DEFAULT 0,
+    health_bar INTEGER NOT NULL,
+    width INTEGER NOT NULL,
+    height INTEGER NOT NULL,
+    defence_attack INTEGER NOT NULL DEFAULT 0,
+    defence_range INTEGER NOT NULL DEFAULT 0,
+    max_level INTEGER[] NOT NULL,
+    cost_resource1 INTEGER NOT NULL DEFAULT 0,
+    cost_resource2 INTEGER NOT NULL DEFAULT 0
 );
-ALTER TABLE
-    "BuildingDetails" ADD PRIMARY KEY("BuildingID");
-ALTER TABLE
-    "BuildingDetails" ADD CONSTRAINT "buildingdetails_name_unique" UNIQUE("Name");
-CREATE TABLE "UserBattleHistory"(
-    "UserID" INTEGER NOT NULL,
-    "NumberOfBattles" INTEGER NOT NULL,
-    "BattlesWon" INTEGER NOT NULL,
-    "BattlesLost" INTEGER NOT NULL,
-    "Trophies" INTEGER NOT NULL
+
+CREATE TABLE user_buildings (
+    instance_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    building_id INTEGER NOT NULL,
+    level BIGINT NOT NULL DEFAULT 1,
+    grid_x INTEGER NOT NULL,
+    grid_y INTEGER NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (building_id) REFERENCES building_details(building_id)
 );
-ALTER TABLE
-    "UserBattleHistory" ADD PRIMARY KEY("UserID");
-CREATE TABLE "Battles"(
-    "BattleID" BIGINT NOT NULL,
-    "AttackerID" INTEGER NOT NULL,
-    "DefenderID" INTEGER NOT NULL,
-    "Resource1Won" INTEGER NOT NULL,
-    "Resource2Won" INTEGER NOT NULL,
-    "VictoryPercentage" INTEGER NOT NULL
+
+CREATE TABLE user_troop_details (
+    user_id INTEGER NOT NULL,
+    troop_id INTEGER NOT NULL,
+    troop_level INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (user_id, troop_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (troop_id) REFERENCES troop_details(troop_id)
 );
-ALTER TABLE
-    "Battles" ADD PRIMARY KEY("BattleID");
-CREATE TABLE "ArmyDetails"(
-    "UserID" INTEGER NOT NULL,
-    "TroopUnitsUsed" INTEGER NOT NULL,
-    "ArmyComposition" jsonb NOT NULL,
-    "CreatedOn" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL
+
+CREATE TABLE army_details (
+    user_id INTEGER NOT NULL PRIMARY KEY,
+    troop_units_used INTEGER NOT NULL DEFAULT 0,
+    army_composition jsonb NOT NULL DEFAULT '[]',
+    created_on TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
-ALTER TABLE
-    "ArmyDetails" ADD PRIMARY KEY("UserID");
-CREATE TABLE "UserBuildings"(
-    "InstanceID" INTEGER NOT NULL,
-    "UserID" INTEGER NOT NULL,
-    "BuildingID" INTEGER NOT NULL,
-    "Level" BIGINT NOT NULL,
-    "GridX" INTEGER NOT NULL,
-    "GridY" INTEGER NOT NULL
+
+CREATE TABLE user_battle_history (
+    user_id INTEGER NOT NULL PRIMARY KEY,
+    number_of_battles INTEGER NOT NULL DEFAULT 0,
+    battles_won INTEGER NOT NULL DEFAULT 0,
+    battles_lost INTEGER NOT NULL DEFAULT 0,
+    trophies INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
-ALTER TABLE
-    "UserBuildings" ADD PRIMARY KEY("InstanceID");
-CREATE TABLE "UserTroopDetails"(
-    "UserID" INTEGER NOT NULL,
-    "TroopID" INTEGER NOT NULL,
-    "TroopLevel" INTEGER NOT NULL
+
+CREATE TABLE battles (
+    battle_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    attacker_id INTEGER NOT NULL,
+    defender_id INTEGER NOT NULL,
+    resource1_won INTEGER NOT NULL DEFAULT 0,
+    resource2_won INTEGER NOT NULL DEFAULT 0,
+    victory_percentage INTEGER NOT NULL,
+    fought_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+    FOREIGN KEY (attacker_id) REFERENCES users(user_id),
+    FOREIGN KEY (defender_id) REFERENCES users(user_id)
 );
-ALTER TABLE
-    "UserTroopDetails" ADD PRIMARY KEY("UserID", "TroopID");
-ALTER TABLE
-    "CityDetails" ADD CONSTRAINT "citydetails_userid_foreign" FOREIGN KEY("UserID") REFERENCES "Users"("UserID");
-ALTER TABLE
-    "UserTroopDetails" ADD CONSTRAINT "usertroopdetails_troopid_foreign" FOREIGN KEY("TroopID") REFERENCES "TroopDetails"("TroopID");
-ALTER TABLE
-    "UserBuildings" ADD CONSTRAINT "userbuildings_buildingid_foreign" FOREIGN KEY("BuildingID") REFERENCES "BuildingDetails"("BuildingID");
-ALTER TABLE
-    "ArmyDetails" ADD CONSTRAINT "armydetails_userid_foreign" FOREIGN KEY("UserID") REFERENCES "Users"("UserID");
-ALTER TABLE
-    "UserBuildings" ADD CONSTRAINT "userbuildings_userid_foreign" FOREIGN KEY("UserID") REFERENCES "Users"("UserID");
-ALTER TABLE
-    "UserTroopDetails" ADD CONSTRAINT "usertroopdetails_userid_foreign" FOREIGN KEY("UserID") REFERENCES "Users"("UserID");
-ALTER TABLE
-    "UserBattleHistory" ADD CONSTRAINT "userbattlehistory_userid_foreign" FOREIGN KEY("UserID") REFERENCES "Users"("UserID");
-ALTER TABLE
-    "Battles" ADD CONSTRAINT "battles_attackerid_foreign" FOREIGN KEY("AttackerID") REFERENCES "Users"("UserID");
-ALTER TABLE
-    "Battles" ADD CONSTRAINT "battles_defenderid_foreign" FOREIGN KEY("DefenderID") REFERENCES "Users"("UserID");
