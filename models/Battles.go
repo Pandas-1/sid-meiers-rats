@@ -3,6 +3,7 @@ package models
 import (
 	"rats/db"
 	"time"
+	"fmt"
 )
 
 type Battle struct {
@@ -16,11 +17,51 @@ type Battle struct {
 }
 
 func CreateBattle(attackerID, defenderID, r1won, r2won, victoryPct int) error {
+	// REMIND YOURSELF TO DO THE TROPHIES PARAMETER LATER
 	_, err := db.DB.Exec(
 		`INSERT INTO battles (attacker_id, defender_id, resource1_won, resource2_won, victory_percentage) 
 		 VALUES ($1, $2, $3, $4, $5)`,
 		attackerID, defenderID, r1won, r2won, victoryPct,
 	)
+	if err != nil {
+		return fmt.Errorf("failed to insert battle: %w", err)
+	}
+
+	var attackerWon, attackerLost int
+	var defenderWon, defenderLost int
+
+	if victoryPct > 50 {
+		attackerWon, attackerLost = 1, 0
+		defenderWon, defenderLost = 0, 1
+	} else {
+		attackerWon, attackerLost = 0, 1
+		defenderWon, defenderLost = 1, 0
+	}
+
+	_, err = db.DB.Exec(`
+		INSERT INTO user_battle_history (user_id, number_of_battles, battles_won, battles_lost, trophies)
+		VALUES ($1, 1, $2, $3, 0)
+		ON CONFLICT (user_id) 
+		DO UPDATE SET 
+			number_of_battles = user_battle_history.number_of_battles + 1,
+			battles_won = user_battle_history.battles_won + $2,
+			battles_lost = user_battle_history.battles_lost + $3
+	`, attackerID, attackerWon, attackerLost)
+
+	if err != nil {
+		return fmt.Errorf("failed to update attacker history: %w", err)
+	}
+
+	_, err = db.DB.Exec(`
+		INSERT INTO user_battle_history (user_id, number_of_battles, battles_won, battles_lost, trophies)
+		VALUES ($1, 1, $2, $3, 0)
+		ON CONFLICT (user_id) 
+		DO UPDATE SET 
+			number_of_battles = user_battle_history.number_of_battles + 1,
+			battles_won = user_battle_history.battles_won + $2,
+			battles_lost = user_battle_history.battles_lost + $3
+	`, defenderID, defenderWon, defenderLost)
+
 	return err
 }
 
