@@ -3,6 +3,7 @@ package models
 import(
 	"rats/db"
 	"fmt"
+    "github.com/lib/pq"
 )
 
 type UserBuilding struct {
@@ -122,6 +123,67 @@ func MoveBuilding(InstanceID int, x int, y int) error {
     _, err = db.DB.Exec(
         "UPDATE user_buildings SET grid_x = $1 , grid_y = $2 WHERE instance_id = $3 ",
         x, y, InstanceID,
+    )
+    return err
+}
+
+// define func upgrade building later when i understand how i want to do the scaling
+// maybe will use smth here for testing
+
+func UpgradeBuilding(instanceID int) error {
+    var currentLevel int
+    var userID int
+    var maxLevels pq.Int64Array
+    var costResource1, costResource2, baseLevel , scaling int
+
+    err := db.DB.QueryRow(
+        `SELECT ub.level, ub.user_id, bd.max_level, bd.cost_resource1, bd.cost_resource2, users.base_level, bd.scaling
+         FROM user_buildings ub
+         JOIN building_details bd ON ub.building_id = bd.building_id
+         JOIN users ON users.user_id = ub.user_id
+         WHERE ub.instance_id = $1`,
+        instanceID,
+    ).Scan(&currentLevel, &userID, &maxLevels, &costResource1, &costResource2, &baseLevel, &scaling)
+    if err != nil {
+        return fmt.Errorf("building not found: %w", err)
+    }
+
+    // check if already at max level
+    absoluteMax := int(maxLevels[baseLevel - 1])
+    if currentLevel >= absoluteMax {
+        return fmt.Errorf("building already at max level")
+    }
+
+    // check if user has enough resources
+    var resource1, resource2 int64
+    err = db.DB.QueryRow(
+        "SELECT resource1, resource2 FROM city_details WHERE user_id = $1",
+        userID,
+    ).Scan(&resource1, &resource2)
+    if err != nil {
+        return fmt.Errorf("could not fetch resources: %w", err)
+    }
+    
+    upgradeCostResource1 := costResource1*scaling*currentLevel
+    upgradeCostResource2 := costResource2*scaling*currentLevel
+
+    if int64(upgradeCostResource1) > resource1 || int64(upgradeCostResource2) > resource2 {
+        return fmt.Errorf("not enough resources")
+    }
+
+    // deduct resources
+    _, err = db.DB.Exec(
+        "UPDATE city_details SET resource1 = resource1 - $2, resource2 = resource2 - $3 WHERE user_id = $1",
+        userID, upgradeCostResource1, upgradeCostResource2,
+    )
+    if err != nil {
+        return err
+    }
+
+    // increment level
+    _, err = db.DB.Exec(
+        "UPDATE user_buildings SET level = level + 1 WHERE instance_id = $1",
+        instanceID,
     )
     return err
 }
