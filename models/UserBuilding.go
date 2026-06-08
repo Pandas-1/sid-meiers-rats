@@ -5,7 +5,7 @@ import(
 	"fmt"
 )
 
-type UserBuildings struct {
+type UserBuilding struct {
 	InstanceID int
 	UserID int
 	BuildingID int
@@ -48,4 +48,43 @@ func PlaceBuilding(userID, buildingID, x, y int) error {
         userID, buildingID, x, y,
     )
     return err
+}
+
+func GetVillageBuildings(userID int) ([]UserBuilding, error) {
+    buildings := make([]UserBuilding, 0)
+
+    rows, err := db.DB.Query(
+        `SELECT instance_id, user_id, building_id, level, grid_x, grid_y
+         FROM user_buildings
+         WHERE user_id = $1`,
+        userID,
+    )
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    for rows.Next() {
+        var b UserBuilding
+
+        err := rows.Scan(
+            &b.InstanceID,
+            &b.UserID,
+            &b.BuildingID,
+            &b.Level,
+            &b.GridX,
+            &b.GridY,
+        )
+        if err != nil {
+            return nil, err
+        }
+
+        buildings = append(buildings, b)
+    }
+
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+
+    return buildings, nil
 }
