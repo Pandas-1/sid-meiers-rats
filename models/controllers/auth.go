@@ -34,3 +34,35 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "registered successfully"})
 }
 
+func Login(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	json.NewDecoder(r.Body).Decode(&input)
+
+	user, err := models.GetUserByUsername(input.Username)
+	if err != nil {
+		http.Error(w,err, 404)
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(input.Password))
+	if err != nil {
+		http.Error(w, err,401)
+		return
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"userID": user.userID,
+		"exp": time.Now().Add(4*time.Hour).Unix(),
+	})
+	tokenString , err := token.SignedString(jwtSecret)
+	if err != nil {
+		http.Error(w,err,500)
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{"token": tokenString})
+}
+
