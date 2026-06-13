@@ -1,0 +1,89 @@
+package controller
+
+import (
+	"encoding/json"
+	"net/http"
+	"rats/models"
+)
+
+func GetVillage(w http.ResponseWriter, r *http.Request) {
+    userID := r.Context().Value(UserIDKey).(int)
+
+    buildings, err := models.GetVillageBuildings(userID)
+    if err != nil {
+        http.Error(w, "Failed to fetch village", http.StatusInternalServerError)
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(buildings)
+}
+
+func PlaceBuilding(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(UserIDKey).(int)
+	var input struct{
+		BuildingID int `json:"building_id"`
+		X int `json:"x"`
+		Y int `json:"y"`
+	}
+	json.NewDecoder(r.Body).Decode(&input)
+	err := models.PlaceBuilding(userID, input.BuildingID, input.X , input.Y)
+	if err != nil {
+        http.Error(w, "Failed to Place Building", http.StatusInternalServerError)
+        return
+    }
+	w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(map[string]string{"message": "building placed"})
+
+}
+
+func MoveBuilding(w http.ResponseWriter, r *http.Request) {
+    userID := r.Context().Value(UserIDKey).(int)
+
+    var input struct {
+        InstanceID int `json:"instance_id"`
+        X          int `json:"x"`
+        Y          int `json:"y"`
+    }
+    json.NewDecoder(r.Body).Decode(&input)
+
+    // verify this building belongs to this user
+    belongs, err := models.BuildingBelongsToUser(input.InstanceID, userID)
+    if err != nil || !belongs {
+        http.Error(w, "Building not found", http.StatusNotFound)
+        return
+    }
+
+    err = models.MoveBuilding(input.InstanceID, input.X, input.Y)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(map[string]string{"message": "building moved"})
+}
+
+func UpgradeBuilding(w http.ResponseWriter, r *http.Request) {
+    userID := r.Context().Value(UserIDKey).(int)
+
+    var input struct {
+        InstanceID int `json:"instance_id"`
+    }
+    json.NewDecoder(r.Body).Decode(&input)
+
+    belongs, err := models.BuildingBelongsToUser(input.InstanceID, userID)
+    if err != nil || !belongs {
+        http.Error(w, "Building not found", http.StatusNotFound)
+        return
+    }
+
+    err = models.UpgradeBuilding(input.InstanceID)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(map[string]string{"message": "building upgraded"})
+}
