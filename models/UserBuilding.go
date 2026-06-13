@@ -187,3 +187,12 @@ func UpgradeBuilding(instanceID int) error {
     )
     return err
 }
+
+func BuildingBelongsToUser(instanceID, userID int) (bool, error) {
+    var count int
+    err := db.DB.QueryRow(
+        "SELECT COUNT(*) FROM user_buildings WHERE instance_id = $1 AND user_id = $2",
+        instanceID, userID,
+    ).Scan(&count)
+    return count > 0, err
+}
