@@ -15,6 +15,8 @@ func SetupRoutes() http.Handler {
 	r.Group(func(r chi.Router) {
 		r.Use(controller.AuthMiddleware)
 		villageRoutes(r)
+		armyRoutes(r)
+		shopRoutes(r)
 	})
 
 	return r
