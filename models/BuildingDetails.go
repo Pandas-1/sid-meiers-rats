@@ -53,3 +53,22 @@ func GetBuildingDetails(buildingID int) (BuildingDetails, error) {
 
 	return b, err
 }
+
+func GetAllBuildingDetails() ([]BuildingDetails, error) {
+    rows, err := db.DB.Query("SELECT building_id, name, building_type, production, scaling, health_bar, width, height, defence_attack, defence_range, max_level, cost_resource1, cost_resource2 FROM building_details")
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var buildings []BuildingDetails
+    for rows.Next() {
+        var b BuildingDetails
+        err := rows.Scan(&b.BuildingID, &b.Name, &b.BuildingType, &b.Production, &b.Scaling, &b.HealthBar, &b.Width, &b.Height, &b.DefenceAttack, &b.DefenceRange, &b.MaxLevel, &b.CostResource1, &b.CostResource2)
+        if err != nil {
+            return nil, err
+        }
+        buildings = append(buildings, b)
+    }
+    return buildings, nil
+}

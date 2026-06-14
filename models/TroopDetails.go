@@ -50,3 +50,22 @@ func GetTroopDetails(troopID int) (Troop, error) {
 
     return t, err
 }
+
+func GetAllTroopDetails() ([]TroopDetails, error) {
+    rows, err := db.DB.Query("SELECT troop_id, name, base_cost, troop_attack_power, building_attack_power, defence, range, attribute_strength, attribute_weakness, troop_army_space, movement_speed, max_level FROM troop_details")
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var troops []TroopDetails
+    for rows.Next() {
+        var t TroopDetails
+        err := rows.Scan(&t.TroopID, &t.Name, &t.BaseCost, &t.TroopAttackPower, &t.BuildingAttackPower, &t.Defence, &t.Range, &t.AttributeStrength, &t.AttributeWeakness, &t.TroopArmySpace, &t.MovementSpeed, &t.MaxLevel)
+        if err != nil {
+            return nil, err
+        }
+        troops = append(troops, t)
+    }
+    return troops, nil
+}
