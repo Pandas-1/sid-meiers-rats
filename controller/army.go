@@ -51,7 +51,7 @@ func LevelUpTroop(w http.ResponseWriter, r *http.Request) {
     }
     json.NewDecoder(r.Body).Decode(&input)
 
-    err := models.UpgradeTroop(userID, input.TroopID)
+    err := models.LevelUpTroop(userID, input.TroopID)
     if err != nil {
         http.Error(w, err.Error(), http.StatusBadRequest)
         return

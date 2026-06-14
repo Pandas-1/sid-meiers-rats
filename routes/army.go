@@ -8,5 +8,5 @@ import (
 func armyRoutes(r chi.Router) {
     r.Get("/army", controller.GetArmy)
     r.Post("/army/train", controller.TrainArmy)
-    r.Put("/army/upgrade", controller.UpgradeTroop)
+    r.Put("/army/upgrade", controller.LevelUpTroop)
 }
