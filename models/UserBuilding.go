@@ -13,6 +13,11 @@ type UserBuilding struct {
 	Level int
 	GridX int
 	GridY int
+    // gotta do this to make only one call for db to make the buildings
+    Width        int
+    Height       int
+    Name         string
+    BuildingType string
 }
 
 func PlaceBuilding(userID, buildingID, x, y int) error {
@@ -52,41 +57,28 @@ func PlaceBuilding(userID, buildingID, x, y int) error {
 }
 
 func GetVillageBuildings(userID int) ([]UserBuilding, error) {
-    buildings := make([]UserBuilding, 0)
-
-    rows, err := db.DB.Query(
-        `SELECT instance_id, user_id, building_id, level, grid_x, grid_y
-         FROM user_buildings
-         WHERE user_id = $1`,
-        userID,
-    )
+    rows, err := db.DB.Query(`
+        SELECT ub.instance_id, ub.user_id, ub.building_id, ub.level, 
+               ub.grid_x, ub.grid_y, bd.width, bd.height, bd.name, bd.building_type
+        FROM user_buildings ub
+        JOIN building_details bd ON ub.building_id = bd.building_id
+        WHERE ub.user_id = $1
+    `, userID)
     if err != nil {
         return nil, err
     }
     defer rows.Close()
 
+    var buildings []UserBuilding
     for rows.Next() {
         var b UserBuilding
-
-        err := rows.Scan(
-            &b.InstanceID,
-            &b.UserID,
-            &b.BuildingID,
-            &b.Level,
-            &b.GridX,
-            &b.GridY,
-        )
+        err := rows.Scan(&b.InstanceID, &b.UserID, &b.BuildingID, &b.Level, 
+                        &b.GridX, &b.GridY, &b.Width, &b.Height, &b.Name, &b.BuildingType)
         if err != nil {
             return nil, err
         }
-
         buildings = append(buildings, b)
     }
-
-    if err := rows.Err(); err != nil {
-        return nil, err
-    }
-
     return buildings, nil
 }
 
