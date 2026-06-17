@@ -1,0 +1,9 @@
+DROP TABLE IF EXISTS battles;
+DROP TABLE IF EXISTS user_battle_history;
+DROP TABLE IF EXISTS army_details;
+DROP TABLE IF EXISTS user_troop_details;
+DROP TABLE IF EXISTS user_buildings;
+DROP TABLE IF EXISTS building_details;
+DROP TABLE IF EXISTS troop_details;
+DROP TABLE IF EXISTS city_details;
+DROP TABLE IF EXISTS users;
