@@ -31,6 +31,24 @@ func PlaceBuilding(userID, buildingID, x, y int) error {
         return fmt.Errorf("building not found: %w", err)
     }
 
+    //  overlap
+    var count int
+    err = db.DB.QueryRow(
+        `SELECT COUNT(*) FROM user_buildings ub
+         JOIN building_details bd ON ub.building_id = bd.building_id
+         WHERE ub.user_id = $1
+         AND ub.grid_x < $2 AND ub.grid_x + bd.width > $3
+         AND ub.grid_y < $4 AND ub.grid_y + bd.height > $5`,
+        userID, x+width, x, y+height, y,
+    ).Scan(&count)
+    if err != nil {
+        return err
+    }
+    if count > 0 {
+        return fmt.Errorf("grid space already occupied")
+    }
+
+    
     res, err := db.DB.Exec(
         `UPDATE city_details 
          SET resource1 = resource1 - $1, 
@@ -50,23 +68,6 @@ func PlaceBuilding(userID, buildingID, x, y int) error {
     }
     if rowsAffected == 0 {
         return fmt.Errorf("insufficient resources to place this building")
-    }
-
-    //  overlap
-    var count int
-    err = db.DB.QueryRow(
-        `SELECT COUNT(*) FROM user_buildings ub
-         JOIN building_details bd ON ub.building_id = bd.building_id
-         WHERE ub.user_id = $1
-         AND ub.grid_x < $2 AND ub.grid_x + bd.width > $3
-         AND ub.grid_y < $4 AND ub.grid_y + bd.height > $5`,
-        userID, x+width, x, y+height, y,
-    ).Scan(&count)
-    if err != nil {
-        return err
-    }
-    if count > 0 {
-        return fmt.Errorf("grid space already occupied")
     }
 
     // insert
