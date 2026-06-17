@@ -21,3 +21,17 @@ func Connect() {
 
 	DB = conn
 }
+
+func GameEntityData() {
+    seedSQL, err := os.ReadFile("migrations/game_entity_data.sql")
+    if err != nil {
+        log.Fatal("Could not read seed file:", err)
+    }
+
+    _, err = DB.Exec(string(seedSQL))
+    if err != nil {
+        log.Fatal("Could not seed database:", err)
+    }
+
+    log.Println("Database seeded successfully!")
+}
