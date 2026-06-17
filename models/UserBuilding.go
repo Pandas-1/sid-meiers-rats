@@ -22,13 +22,34 @@ type UserBuilding struct {
 
 func PlaceBuilding(userID, buildingID, x, y int) error {
     //  get building size
-    var width, height int
+    var width, height, costR1, costR2 int
     err := db.DB.QueryRow(
-        "SELECT width, height FROM building_details WHERE building_id = $1",
+        "SELECT width, height, cost_resource1, cost_resource2 FROM building_details WHERE building_id = $1",
         buildingID,
-    ).Scan(&width, &height)
+    ).Scan(&width, &height, &costR1, &costR2)
     if err != nil {
         return fmt.Errorf("building not found: %w", err)
+    }
+
+    res, err := db.DB.Exec(
+        `UPDATE city_details 
+         SET resource1 = resource1 - $1, 
+             resource2 = resource2 - $2 
+         WHERE user_id = $3 
+           AND resource1 >= $1 
+           AND resource2 >= $2`,
+        costR1, costR2, userID,
+    )
+    if err != nil {
+        return fmt.Errorf("failed to process transaction: %w", err)
+    }
+
+    rowsAffected, err := res.RowsAffected()
+    if err != nil {
+        return err
+    }
+    if rowsAffected == 0 {
+        return fmt.Errorf("insufficient resources to place this building")
     }
 
     //  overlap
