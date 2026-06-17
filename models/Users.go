@@ -66,6 +66,12 @@ func CreateUser(username, passwordHash string) error {
          SELECT $1, troop_id, 1 FROM troop_details`,
         userID,
     )
+
+    // forgor i also gotta add the townhall at the centre
+    _, err = tx.Exec(
+        `INSERT INTO user_buildings (user_id, building_id,level, grid_x , grid_y)  VALUES ($1, 1,0,20,20)`,
+        userID,
+    )
     if err != nil {
         return fmt.Errorf("could not create troop details: %w", err)
     }
