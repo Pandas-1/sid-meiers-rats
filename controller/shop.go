@@ -4,11 +4,13 @@ import (
     "encoding/json"
     "net/http"
     "rats/models"
+    "log"
 )
 
 func GetBuildings(w http.ResponseWriter, r *http.Request) {
     buildings, err := models.GetAllBuildingDetails()
     if err != nil {
+        log.Println("GetBuildings error:", err)
         http.Error(w, "Failed to fetch buildings", http.StatusInternalServerError)
         return
     }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"rats/models"
+    "log"
 )
 
 func GetVillage(w http.ResponseWriter, r *http.Request) {
@@ -11,6 +12,7 @@ func GetVillage(w http.ResponseWriter, r *http.Request) {
 
     buildings, err := models.GetVillageBuildings(userID)
     if err != nil {
+        log.Println("GetVillage error:", err)
         http.Error(w, "Failed to fetch village", http.StatusInternalServerError)
         return
     }
