@@ -3,10 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Village Game</title>
+    <title>SID MIER'S RATS</title>
     <link rel="stylesheet" href="css/game.css">
 </head>
 <body>
+    <div id="ui">
+        <select id="buildingSelect"></select>
+        <button id="placeBtn">Place Building</button>
+        <button id="moveBtn">Move Building</button>
+        <button id="armyBtn">Manage Army</button>
+        <p id="status"></p>
+    </div>
+    <div id="armyPanel" style="display:none">
+        <h3>Train Army</h3>
+        <div id="troopList"></div>
+        <button id="trainBtn">Train Army</button>
+        <button id="closeArmyBtn">Close</button>
+    </div>
     <canvas id="gameCanvas"></canvas>
     <script src="js/canvas.js"></script>
     <script src="js/main.js"></script>
