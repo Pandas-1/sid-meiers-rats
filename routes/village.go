@@ -10,4 +10,5 @@ func villageRoutes(r chi.Router) {
     r.Post("/village/place", controller.PlaceBuilding)
     r.Put("/village/move", controller.MoveBuilding)
     r.Put("/village/upgrade", controller.UpgradeBuilding)
+    r.Get("/city", controller.GetCity)
 }

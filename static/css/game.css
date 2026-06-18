@@ -92,3 +92,14 @@ select, button {
     border-top: 1px solid #444;
     padding-top: 8px;
 }
+
+#resources {
+    display: flex;
+    gap: 12px;
+    font-size: 0.85rem;
+    color: #FFD700;
+}
+
+#elixirDisplay {
+    color: #a855f7;
+}

@@ -177,6 +177,19 @@ async function trainArmy() {
     }
 }
 
+async function loadResources() {
+    console.log("loading resources...")
+    const res = await fetch('/city', {
+        headers: { 'Authorization': token }
+    })
+    console.log("resources response:", res.status)
+    if (res.ok) {
+        const city = await res.json()
+        document.getElementById('goldDisplay').textContent = `Gold: ${city.Resource1}`
+        document.getElementById('elixirDisplay').textContent = `Elixir: ${city.Resource2}`
+    }
+}
+
 document.getElementById('placeBtn').addEventListener('click', () => {
     mode = 'place'
     status.style.color = '#6bff6b'
@@ -218,5 +231,7 @@ async function loadVillage() {
     //console.log("buildings", buildings)
     render(buildings)
 }
+
 loadVillage()
 loadShop()
+loadResources()

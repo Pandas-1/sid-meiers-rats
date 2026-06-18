@@ -89,3 +89,15 @@ func UpgradeBuilding(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(map[string]string{"message": "building upgraded"})
 }
+
+func GetCity(w http.ResponseWriter, r *http.Request) {
+    userID := r.Context().Value(UserIDKey).(int)
+    city, err := models.GetCity(userID)
+    if err != nil {
+        log.Println("GetCity error:", err)
+        http.Error(w, "Failed to fetch city", http.StatusInternalServerError)
+        return
+    }
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(city)
+}
