@@ -45,3 +45,14 @@ func UpdateResources(userID int, resource1, resource2 int64) error {
 	return err
 
 }
+
+func AddResources(userID int, resource1, resource2 int64) error {
+    _, err := db.DB.Exec(
+        `UPDATE city_details 
+         SET resource1 = GREATEST(0, resource1 + $2),
+             resource2 = GREATEST(0, resource2 + $3)
+         WHERE user_id = $1`,
+        userID, resource1, resource2,
+    )
+    return err
+}
