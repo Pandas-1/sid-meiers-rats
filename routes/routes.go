@@ -22,6 +22,7 @@ func SetupRoutes() http.Handler {
 		armyRoutes(r)
 		shopRoutes(r)
 		matchmakingRoutes(r)
+		battleRoutes(r)
 	})
 
 	return r
