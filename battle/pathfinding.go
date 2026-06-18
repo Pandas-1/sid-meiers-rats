@@ -60,3 +60,26 @@ func troopsInRange(b BuildingState, troops []TroopState) []*TroopState {
     }
     return inRangeTroops
 }
+
+func calculateDamage(attack int, attackerElement int, defenderElement int) int {
+    if attackerElement == 0 || defenderElement == 0 {
+        return attack
+    }
+
+    strongAgainst, exists := elementChart[attackerElement]
+    if !exists {
+        return attack
+    }
+
+    if defenderElement == strongAgainst {
+        // attacker strong against defender
+        return int(float64(attack) * 1.375)
+    }
+
+    if elementChart[defenderElement] == attackerElement {
+        // attacker weak against defender
+        return int(float64(attack) * 0.5)
+    }
+
+    return attack
+}
