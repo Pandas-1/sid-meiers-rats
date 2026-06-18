@@ -10,6 +10,7 @@ if (!token) {
 let mode = null
 let selectedInstanceID = null
 let buildings = []
+let availableTroops = []
 const buildingSelect = document.getElementById('buildingSelect')
 const status = document.getElementById('status')
 
@@ -92,6 +93,90 @@ ctx.canvas.addEventListener('click', async function(e) {
     }
 })
 
+async function loadTroops() {
+    // fetch both shop troops and current army simultaneously
+    const [troopRes, armyRes] = await Promise.all([
+        fetch('/shop/troops', { headers: { 'Authorization': token } }),
+        fetch('/army', { headers: { 'Authorization': token } })
+    ])
+
+    availableTroops = await troopRes.json()
+    const currentArmy = await armyRes.json()
+
+    // build lookup of current quantities
+    const currentComp = {}
+    if (currentArmy.ArmyComposition) {
+        currentArmy.ArmyComposition.forEach(c => {
+            currentComp[c.troop_id] = c.quantity
+        })
+    }
+
+    const troopList = document.getElementById('troopList')
+    troopList.innerHTML = `
+        <div class="troop-row troop-header">
+            <span>Troop</span>
+            <span>Space</span>
+            <span>Cost</span>
+            <span>Qty</span>
+        </div>
+    `
+
+    availableTroops.forEach(t => {
+        const currentQty = currentComp[t.TroopID] || 0
+        const row = document.createElement('div')
+        row.className = 'troop-row'
+        row.innerHTML = `
+            <span>${t.Name}</span>
+            <span>${t.TroopArmySpace}</span>
+            <span>${t.BaseCost}</span>
+            <input type="number" min="0" value="${currentQty}" id="troop_${t.TroopID}">
+        `
+        troopList.appendChild(row)
+    })
+
+    // show max capacity
+    const capacityDiv = document.createElement('div')
+    capacityDiv.id = 'capacity'
+    capacityDiv.textContent = `Army capacity: ${currentArmy.TroopUnitsUsed} used`
+    troopList.appendChild(capacityDiv)
+}
+
+async function trainArmy() {
+    const composition = []
+
+    availableTroops.forEach(t => {
+        const input = document.getElementById(`troop_${t.TroopID}`)
+        const qty = parseInt(input.value)
+        if (qty > 0) {
+            composition.push({ troop_id: t.TroopID, quantity: qty })
+        }
+    })
+
+    if (composition.length === 0) {
+        status.textContent = 'Select at least one troop'
+        status.style.color = '#ff6b6b'
+        return
+    }
+
+    const res = await fetch('/army/train', {
+        method: 'POST',
+        headers: {
+            'Authorization': token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ composition })
+    })
+
+    if (res.ok) {
+        status.style.color = '#6bff6b'
+        status.textContent = 'Army trained!'
+        document.getElementById('armyPanel').style.display = 'none'
+    } else {
+        status.style.color = '#ff6b6b'
+        status.textContent = await res.text()
+    }
+}
+
 document.getElementById('placeBtn').addEventListener('click', () => {
     mode = 'place'
     status.style.color = '#6bff6b'
@@ -102,6 +187,17 @@ document.getElementById('moveBtn').addEventListener('click', () => {
     mode = 'move'
     status.style.color = '#6bff6b'
     status.textContent = 'Click a building to select it'
+})
+
+document.getElementById('armyBtn').addEventListener('click', async () => {
+    await loadTroops()
+    document.getElementById('armyPanel').style.display = 'block'
+})
+
+document.getElementById('trainBtn').addEventListener('click', trainArmy)
+
+document.getElementById('closeArmyBtn').addEventListener('click', () => {
+    document.getElementById('armyPanel').style.display = 'none'
 })
 
 function render(buildings) {
