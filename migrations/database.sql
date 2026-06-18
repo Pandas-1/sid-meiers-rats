@@ -50,7 +50,8 @@ CREATE TABLE building_details (
     defence_range INTEGER NOT NULL DEFAULT 0,
     max_level INTEGER[] NOT NULL,
     cost_resource1 INTEGER NOT NULL DEFAULT 0,
-    cost_resource2 INTEGER NOT NULL DEFAULT 0
+    cost_resource2 INTEGER NOT NULL DEFAULT 0,
+    element_type INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE user_buildings (

@@ -20,8 +20,43 @@ func buildingCenter(b BuildingState) Point {
     }
 }
 
+var elementChart = map[int]int{
+    2: 5,  // Burning beats Ground
+    3: 2,  // Wet beats Burning
+    4: 3,  // Flying beats Wet
+    5: 4,  // Ground beats Flying
+    6: 7,  // Bright beats Dark
+    7: 6,  // Dark beats Bright
+}
+
 func inRange(b BuildingState, troop TroopState) bool {
     center := buildingCenter(b)
     troopPos := Point{X: troop.X, Y: troop.Y}
     return distance(troopPos, center) <= troop.Range
+}
+
+func nearestBuilding(troop TroopState, buildings []BuildingState) *BuildingState {
+    var nearest *BuildingState
+    minDist := math.MaxFloat64
+
+    for i := range buildings {
+        center := buildingCenter(buildings[i])
+        troopPos := Point{X: troop.X, Y: troop.Y}
+        d := distance(troopPos, center)
+        if d < minDist {
+            minDist = d
+            nearest = &buildings[i]
+        }
+    }
+    return nearest
+}
+
+func troopsInRange(b BuildingState, troops []TroopState) []*TroopState {
+    var inRangeTroops []*TroopState
+    for i := range troops {
+        if inRange(b, troops[i]) {
+            inRangeTroops = append(inRangeTroops, &troops[i])
+        }
+    }
+    return inRangeTroops
 }

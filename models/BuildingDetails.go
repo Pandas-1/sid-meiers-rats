@@ -20,6 +20,7 @@ type BuildingDetails struct {
 	MaxLevel pq.Int64Array
 	CostResource1 int
 	CostResource2 int
+	ElementType int
 
 }
 
@@ -29,7 +30,7 @@ func GetBuildingDetails(buildingID int) (BuildingDetails, error) {
 	row := db.DB.QueryRow(
 		`SELECT building_id, name, building_type, production, scaling,
 		        health_bar, width, height, defence_attack,
-		        defence_range, max_level, cost_resource1, cost_resource2
+		        defence_range, max_level, cost_resource1, cost_resource2, element_type
 		   FROM building_details
 		  WHERE building_id = $1`,
 		buildingID,
@@ -49,13 +50,14 @@ func GetBuildingDetails(buildingID int) (BuildingDetails, error) {
 		&b.MaxLevel,
 		&b.CostResource1,
 		&b.CostResource2,
+		&b.ElementType,
 	)
 
 	return b, err
 }
 
 func GetAllBuildingDetails() ([]BuildingDetails, error) {
-    rows, err := db.DB.Query("SELECT building_id, name, building_type, production, scaling, health_bar, width, height, defence_attack, defence_range, max_level, cost_resource1, cost_resource2 FROM building_details")
+    rows, err := db.DB.Query("SELECT building_id, name, building_type, production, scaling, health_bar, width, height, defence_attack, defence_range, max_level, cost_resource1, cost_resource2, element_type FROM building_details")
     if err != nil {
         return nil, err
     }
@@ -64,7 +66,7 @@ func GetAllBuildingDetails() ([]BuildingDetails, error) {
     var buildings []BuildingDetails
     for rows.Next() {
         var b BuildingDetails
-        err := rows.Scan(&b.BuildingID, &b.Name, &b.BuildingType, &b.Production, &b.Scaling, &b.HealthBar, &b.Width, &b.Height, &b.DefenceAttack, &b.DefenceRange, &b.MaxLevel, &b.CostResource1, &b.CostResource2)
+        err := rows.Scan(&b.BuildingID, &b.Name, &b.BuildingType, &b.Production, &b.Scaling, &b.HealthBar, &b.Width, &b.Height, &b.DefenceAttack, &b.DefenceRange, &b.MaxLevel, &b.CostResource1, &b.CostResource2, &b.ElementType)
         if err != nil {
             return nil, err
         }

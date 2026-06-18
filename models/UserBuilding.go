@@ -18,6 +18,7 @@ type UserBuilding struct {
     Height       int
     Name         string
     BuildingType string
+    ElementType int
 }
 
 func PlaceBuilding(userID, buildingID, x, y int) error {
@@ -81,7 +82,7 @@ func PlaceBuilding(userID, buildingID, x, y int) error {
 func GetVillageBuildings(userID int) ([]UserBuilding, error) {
     rows, err := db.DB.Query(`
         SELECT ub.instance_id, ub.user_id, ub.building_id, ub.level, 
-               ub.grid_x, ub.grid_y, bd.width, bd.height, bd.name, bd.building_type
+               ub.grid_x, ub.grid_y, bd.width, bd.height, bd.name, bd.building_type, bd.element_type
         FROM user_buildings ub
         JOIN building_details bd ON ub.building_id = bd.building_id
         WHERE ub.user_id = $1
@@ -95,7 +96,7 @@ func GetVillageBuildings(userID int) ([]UserBuilding, error) {
     for rows.Next() {
         var b UserBuilding
         err := rows.Scan(&b.InstanceID, &b.UserID, &b.BuildingID, &b.Level, 
-                        &b.GridX, &b.GridY, &b.Width, &b.Height, &b.Name, &b.BuildingType)
+                        &b.GridX, &b.GridY, &b.Width, &b.Height, &b.Name, &b.BuildingType, &b.ElementType)
         if err != nil {
             return nil, err
         }
