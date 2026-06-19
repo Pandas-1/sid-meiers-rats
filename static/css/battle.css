@@ -1,0 +1,96 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #1a1a2e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: sans-serif;
+    color: white;
+}
+
+#gameCanvas {
+    border: 1px solid #444;
+}
+
+#ui {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    top: 10%;
+    left: 2%;
+}
+
+#resources {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.85rem;
+    color: #FFD700;
+}
+
+#troopSelector {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.troop-btn {
+    padding: 8px;
+    background: #2a2a4a;
+    color: white;
+    border: 1px solid #444;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: left;
+    font-size: 0.8rem;
+}
+
+.troop-btn.selected {
+    border-color: #4a90d9;
+    background: #1a3a6a;
+}
+
+#status {
+    color: #6bff6b;
+    font-size: 0.8rem;
+}
+
+#resultScreen {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #2a2a4a;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 30px;
+    text-align: center;
+    z-index: 20;
+}
+
+#resultScreen h2 {
+    color: #4a90d9;
+    margin-bottom: 15px;
+}
+
+#resultScreen p {
+    margin-bottom: 20px;
+    color: #aaa;
+}
+
+#returnBtn {
+    padding: 10px 20px;
+    background: #4a90d9;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
