@@ -6,7 +6,12 @@ import (
     "sync"
     "rats/models"
     "github.com/gorilla/websocket"
+    "github.com/golang-jwt/jwt/v5"
+    "time"
+    "log"
 )
+
+var jwtSecret = []byte("inthehistoryofjoeoverithasneverbeenthisjoeveridontevenknowifthisissecurebutafterenoughlettersithastobesecureatthispointlikewhat")
 
 var upgrader = websocket.Upgrader{
     CheckOrigin: func(r *http.Request) bool {
@@ -26,6 +31,7 @@ func StartBattle(attackerID, defenderID int) (int, error) {
     if err != nil {
         return 0, err
     }
+    log.Printf("Session created with %d buildings", session.InitBuildings)
 
     sessionsMu.Lock()
     battleID := nextBattleID
@@ -40,6 +46,12 @@ func StartBattle(attackerID, defenderID int) (int, error) {
 }
 
 func runSession(battleID int, session *BattleSession) {
+    for i := 0; i < 200; i++ {
+        if session.OnTick != nil {
+            break
+        }
+        time.Sleep(50 * time.Millisecond)
+    }
     for range session.Ticker.C {
         session.Tick()
         if session.OnTick != nil {
@@ -57,7 +69,25 @@ func runSession(battleID int, session *BattleSession) {
 }
 
 func BattleWSHandler(w http.ResponseWriter, r *http.Request) {
-    // get battleID from query param
+    // get battleID from query param and token verification
+
+        log.Printf("WS request received")
+
+    tokenString := r.URL.Query().Get("token")
+    if tokenString == "" {
+        http.Error(w, "No token provided", 401)
+        return
+    }
+
+    token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+        return jwtSecret, nil
+    })
+    if err != nil || !token.Valid {
+        http.Error(w, "Invalid token", 401)
+        return
+    }
+
+
     battleIDStr := r.URL.Query().Get("battle_id")
     var battleID int
     json.Unmarshal([]byte(battleIDStr), &battleID)
@@ -77,6 +107,7 @@ func BattleWSHandler(w http.ResponseWriter, r *http.Request) {
     if err != nil {
         return
     }
+    session.ClientConnected = true 
     defer conn.Close()
 
     // set callback — every tick sends state to this client
