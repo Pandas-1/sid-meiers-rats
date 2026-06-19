@@ -7,5 +7,4 @@ import (
 
 func battleRoutes(r chi.Router) {
     r.Post("/battle/start", controller.StartBattle)
-    r.Get("/battle/ws", controller.BattleWS)
 }

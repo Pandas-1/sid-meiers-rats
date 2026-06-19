@@ -4,6 +4,7 @@ import (
 	"math"
 	"rats/models"
 	"sync"
+	"log"
 	"time"
 )
 
@@ -64,6 +65,7 @@ type BattleSession struct {
 	OnTick        func(BattleState)
 	ArmyPool      map[int]models.Troop
 	ArmyComp      []models.ArmyComposition
+	ClientConnected bool
 }
 
 func NewSession(attackerID int, defenderID int) (*BattleSession, error) {
@@ -71,6 +73,8 @@ func NewSession(attackerID int, defenderID int) (*BattleSession, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("Loaded %d buildings for defender %d", len(villageBuildings), defenderID)
+    log.Printf("Buildings: %+v", villageBuildings)
 
 	army, err := models.GetArmy(attackerID)
 	if err != nil {
@@ -191,7 +195,7 @@ func (s *BattleSession) Tick() {
 				s.Buildings[i].ElementType,
 				t.ElementType,
 			)
-			t.CurrentHP -= damage
+			t.CurrentHP -= damage/40
 		}
 	}
 
@@ -214,8 +218,9 @@ func (s *BattleSession) Tick() {
 	s.Buildings = aliveBuildings
 
 	// check battle end
-	if len(s.Buildings) == 0 || (len(s.Troops) == 0 && len(s.DropQueue) == 0) {
+	if len(s.Buildings) == 0 || (len(s.Troops) == 0 && len(s.DropQueue) == 0 && s.ClientConnected && s.ElapsedTicks > 200) {
 		s.Done = true
+		log.Printf("battle stopped on purpose")
 	}
 }
 

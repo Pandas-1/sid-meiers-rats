@@ -15,6 +15,7 @@ func SetupRoutes() http.Handler {
 	})
 	r.Post("/register", controller.Register)
 	r.Post("/login", controller.Login)
+	r.Get("/battle/ws", controller.BattleWS)
 
 	r.Group(func(r chi.Router) {
 		r.Use(controller.AuthMiddleware)
