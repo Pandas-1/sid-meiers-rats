@@ -11,6 +11,7 @@ let mode = null
 let selectedInstanceID = null
 let buildings = []
 let availableTroops = []
+let currentOpponent = null
 const buildingSelect = document.getElementById('buildingSelect')
 const status = document.getElementById('status')
 
@@ -232,6 +233,51 @@ async function loadVillage() {
     render(buildings)
 }
 
+
+
+async function findOpponent() {
+    const res = await fetch('/matchmaking/find', {
+        method: 'POST',
+        headers: { 'Authorization': token }
+    })
+    if (res.ok) {
+        currentOpponent = await res.json()
+        console.log("opponent:", currentOpponent)
+        document.getElementById('opponentInfo').textContent = 
+            `Found: ${currentOpponent.opponent_username} (${currentOpponent.opponent_trophies} trophies)`
+        document.getElementById('attackBtn').style.display = 'block'
+    } else {
+        status.style.color = '#ff6b6b'
+        status.textContent = 'No opponent found'
+    }
+}
+
+async function startBattle() {
+    console.log("startBattle called, currentOpponent:", currentOpponent)
+    if (!currentOpponent) {
+        console.log("currentOpponent is null!")
+        return
+    }
+    console.log("defender_id being sent:", currentOpponent.opponent_id)
+    const res = await fetch('/battle/start', {
+        method: 'POST',
+        headers: {
+            'Authorization': token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ defender_id: currentOpponent.opponent_id })
+    })
+    if (res.ok) {
+        const data = await res.json()
+        window.location.href = `/static/battle.html?battle_id=${data.battle_id}`
+    }
+}
+
+document.getElementById('matchmakingBtn').addEventListener('click', findOpponent)
+document.getElementById('attackBtn').addEventListener('click', startBattle)
+
 loadVillage()
 loadShop()
 loadResources()
+console.log("opponent object:", currentOpponent)
+console.log("sending defender_id:", currentOpponent.opponent_id)
