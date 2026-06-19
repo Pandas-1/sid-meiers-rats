@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Battle</title>
+    <link rel="stylesheet" href="css/battle.css">
+</head>
+<body>
+    <div id="ui">
+        <div id="resources">
+            <span id="destruction">Destruction: 0%</span>
+            <span id="elapsed">Ticks: 0</span>
+        </div>
+        <div id="troopSelector"></div>
+        <p id="status"></p>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="resultScreen" style="display:none">
+        <h2>Battle Over</h2>
+        <p id="resultText"></p>
+        <button id="returnBtn">Return to Village</button>
+    </div>
+    <script src="js/battleCanvas.js"></script>
+    <script src="js/battle.js"></script>
+</body>
+</html>
