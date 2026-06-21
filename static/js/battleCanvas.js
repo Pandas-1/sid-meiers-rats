@@ -1,5 +1,6 @@
 const GRID_SIZE = 50
 const CELL_SIZE = 16
+const imageCache = {}
 
 function initCanvas() {
     const canvas = document.getElementById('gameCanvas')
@@ -34,24 +35,27 @@ function drawHPBar(ctx, x, y, w, currentHP, maxHP) {
     ctx.fillRect(x, y - barH - 1, w * pct, barH)
 }
 
-function drawBuilding(ctx, b) {
-    const x = b.x * CELL_SIZE
-    const y = b.y * CELL_SIZE
-    const w = b.width * CELL_SIZE
-    const h = b.height * CELL_SIZE
+function drawBuilding(ctx, building) {
+    const x = building.x * CELL_SIZE
+    const y = building.y * CELL_SIZE      
+    const w = building.width * CELL_SIZE  
+    const h = building.height * CELL_SIZE 
 
-    ctx.fillStyle = '#4a90d9'
-    ctx.fillRect(x, y, w, h)
-    ctx.strokeStyle = '#ffffff'
-    ctx.strokeRect(x, y, w, h)
+    const img = getImage(building.name)   // ← lowercase
+    if (img.complete && img.naturalWidth > 0) {
+        ctx.drawImage(img, x, y, w, h)
+    } else {
+        ctx.fillStyle = '#32475e'
+        ctx.fillRect(x, y, w, h)
+        img.onload = () => ctx.drawImage(img, x, y, w, h)
+    }
 
     ctx.fillStyle = '#ffffff'
-    ctx.font = '7px sans-serif'
-    ctx.fillText(b.name, x + 2, y + 10)
+    ctx.font = '8px sans-serif'
+    ctx.fillText(building.name, x + 2, y + 10)  // ← lowercase
 
-    drawHPBar(ctx, x, y, w, b.current_hp, b.max_hp)
+    drawHPBar(ctx, x, y, w, building.current_hp, building.max_hp)
 }
-
 function drawTroop(ctx, t) {
     const x = t.x * CELL_SIZE
     const y = t.y * CELL_SIZE
@@ -74,4 +78,12 @@ function renderBattle(ctx, state) {
     drawGrid(ctx)
     if (state.buildings) state.buildings.forEach(b => drawBuilding(ctx, b))
     if (state.troops) state.troops.forEach(t => drawTroop(ctx, t))
+}
+function getImage(name) {
+    if (imageCache[name]) return imageCache[name]
+    const img = new Image()
+    img.src = `/static/images/buildings/${name.toLowerCase().replace(/ /g, '_')}.png`
+    imageCache[name] = img
+    console.log("image called for?")
+    return img
 }

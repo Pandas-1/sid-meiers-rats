@@ -1,12 +1,11 @@
 module rats
 
-go 1.26.3
-
-require github.com/lib/pq v1.12.3
+go 1.23.0
 
 require (
-	github.com/go-chi/chi/v5 v5.3.0 // indirect
-	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
-	github.com/gorilla/websocket v1.5.3 // indirect
-	golang.org/x/crypto v0.53.0 // indirect
+	github.com/go-chi/chi/v5 v5.3.0
+	github.com/golang-jwt/jwt/v5 v5.3.1
+	github.com/gorilla/websocket v1.5.3
+	github.com/lib/pq v1.12.3
+	golang.org/x/crypto v0.17.0
 )

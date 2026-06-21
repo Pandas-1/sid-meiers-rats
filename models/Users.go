@@ -68,12 +68,15 @@ func CreateUser(username, passwordHash string) error {
     )
 
     // forgor i also gotta add the townhall at the centre 2nd node, also gotta add elixer and mines
-    _, err = tx.Exec(
-        `INSERT INTO user_buildings (user_id, building_id,level, grid_x , grid_y)  VALUES ($1, 1,0,20,20), ($1,6,1,10,20),($1,7,1,30,20)`,
-        userID,
-    )
+    _, err = tx.Exec(`
+        INSERT INTO user_buildings (user_id, building_id, level, grid_x, grid_y)
+        VALUES 
+            ($1, (SELECT building_id FROM building_details WHERE name = 'Town Hall'), 1, 23, 23),
+            ($1, (SELECT building_id FROM building_details WHERE name = 'Gold Mine'), 1, 10, 20),
+            ($1, (SELECT building_id FROM building_details WHERE name = 'Elixir Collector'), 1, 30, 20)
+    `, userID)
     if err != nil {
-        return fmt.Errorf("could not create troop details: %w", err)
+        return fmt.Errorf("could not place starting bildings: %w", err)
     }
 
     // all steps succeeded, commit
