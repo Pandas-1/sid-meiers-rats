@@ -9,6 +9,7 @@ import (
 
 func GetVillage(w http.ResponseWriter, r *http.Request) {
     userID := r.Context().Value(UserIDKey).(int)
+    models.UpdatePassiveResources(userID) 
 
     buildings, err := models.GetVillageBuildings(userID)
     if err != nil {
@@ -92,6 +93,7 @@ func UpgradeBuilding(w http.ResponseWriter, r *http.Request) {
 
 func GetCity(w http.ResponseWriter, r *http.Request) {
     userID := r.Context().Value(UserIDKey).(int)
+    models.UpdatePassiveResources(userID)   
     city, err := models.GetCity(userID)
     if err != nil {
         log.Println("GetCity error:", err)

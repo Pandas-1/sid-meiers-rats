@@ -67,9 +67,9 @@ func CreateUser(username, passwordHash string) error {
         userID,
     )
 
-    // forgor i also gotta add the townhall at the centre
+    // forgor i also gotta add the townhall at the centre 2nd node, also gotta add elixer and mines
     _, err = tx.Exec(
-        `INSERT INTO user_buildings (user_id, building_id,level, grid_x , grid_y)  VALUES ($1, 1,0,20,20)`,
+        `INSERT INTO user_buildings (user_id, building_id,level, grid_x , grid_y)  VALUES ($1, 1,0,20,20), ($1,6,1,10,20),($1,7,1,30,20)`,
         userID,
     )
     if err != nil {

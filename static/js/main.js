@@ -273,6 +273,10 @@ async function startBattle() {
     }
 }
 
+setInterval(async () => {
+    await loadResources()
+}, 30000)
+
 document.getElementById('matchmakingBtn').addEventListener('click', findOpponent)
 document.getElementById('attackBtn').addEventListener('click', startBattle)
 
