@@ -70,6 +70,9 @@ func CreateOrUpdateArmy(userID int, composition []ArmyComposition) error {
 
 	for _, comp := range composition {
 		var spacePerUnit, baseCost, troopLevel int
+		if comp.Quantity < 0 {
+            return fmt.Errorf("invalid quantity for troop %d", comp.TroopID)
+        }
 		err := tx.QueryRow(
 			`SELECT td.troop_army_space, td.base_cost, utd.troop_level
 			 FROM troop_details td
