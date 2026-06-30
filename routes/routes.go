@@ -26,5 +26,8 @@ func SetupRoutes() http.Handler {
 		battleRoutes(r)
 	})
 
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+    http.Redirect(w, r, "/static/login.html", http.StatusFound)
+	})
 	return r
 }
