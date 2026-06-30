@@ -8,6 +8,7 @@ import (
     "github.com/golang-jwt/jwt/v5"
     "time"
 	"context"
+	"strings"
 )
 
 type contextKey string
@@ -20,6 +21,16 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		Password string `json:"password"`
 	}
 	json.NewDecoder(r.Body).Decode(&input)
+
+	if len(strings.TrimSpace(input.Username)) < 3 {
+        http.Error(w, "Username must be at least 3 characters", 400)
+        return
+    }
+    if len(input.Password) < 8 {
+        http.Error(w, "Password must be at least 8 characters", 400)
+        return
+    }
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
 		http.Error(w, "Server error", 500)
