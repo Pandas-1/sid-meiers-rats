@@ -153,11 +153,11 @@ async function trainArmy() {
         }
     })
 
-    if (composition.length === 0) {
-        status.textContent = 'Select at least one troop'
-        status.style.color = '#ff6b6b'
-        return
-    }
+    //if (composition.length === 0) {
+     //   status.textContent = 'Select at least one troop'
+     //   status.style.color = '#ff6b6b'
+     //   return
+    //}
 
     const res = await fetch('/army/train', {
         method: 'POST',
@@ -270,6 +270,10 @@ async function startBattle() {
     if (res.ok) {
         const data = await res.json()
         window.location.href = `/static/battle.html?battle_id=${data.battle_id}`
+    }   else {
+        const errorText = await res.text()
+            status.style.color = '#ff6b6b'
+            status.textContent = errorText  
     }
 }
 

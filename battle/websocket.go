@@ -8,6 +8,7 @@ import (
     "github.com/gorilla/websocket"
     "github.com/golang-jwt/jwt/v5"
     "time"
+    "fmt"
     "log"
 )
 
@@ -27,6 +28,11 @@ var (
 )
 
 func StartBattle(attackerID, defenderID int) (int, error) {
+    army, err := models.GetArmy(attackerID)
+    if err != nil || len(army.ArmyComposition) == 0 {
+        return 0, fmt.Errorf("you must train an army before attacking")
+    }
+
     session, err := NewSession(attackerID, defenderID)
     if err != nil {
         return 0, err
@@ -153,4 +159,6 @@ func saveBattleResult(session *BattleSession) {
         models.AddResources(session.AttackerID, int64(loot1), int64(loot2))
         models.AddResources(session.DefenderID, int64(-loot1), int64(-loot2))
     }
+
+    err = models.ClearArmy(session.AttackerID)
 }

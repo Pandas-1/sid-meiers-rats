@@ -28,10 +28,10 @@ func TrainArmy(w http.ResponseWriter, r *http.Request) {
     }
     json.NewDecoder(r.Body).Decode(&input)
 
-    if len(input.Composition) == 0 {
-        http.Error(w, "Army composition cannot be empty", http.StatusBadRequest)
-        return
-    }
+    //if len(input.Composition) == 0 {
+     //   http.Error(w, "Army composition cannot be empty", http.StatusBadRequest)
+     //   return
+    //}
 
     err := models.CreateOrUpdateArmy(userID, input.Composition)
     if err != nil {
