@@ -295,6 +295,65 @@ async function startBattle() {
     }
 }
 
+async function loadTroopUpgrades() {
+    const [troopRes, userTroopRes] = await Promise.all([
+        fetch('/shop/troops', { headers: { 'Authorization': token } }),
+        fetch('/army/troops', { headers: { 'Authorization': token } })
+    ])
+
+    const allTroops = await troopRes.json()
+    const userTroops = await userTroopRes.json()
+
+    // build level lookup by troop_id
+    const troopLevels = {}
+    if (userTroops) {
+        userTroops.forEach(t => {
+            troopLevels[t.TroopID] = t.TroopLevel
+        })
+    }
+
+    const list = document.getElementById('troopUpgradeList')
+    list.innerHTML = ''
+
+    allTroops.forEach(t => {
+        const level = troopLevels[t.TroopID] || 1
+        const upgradeCost = t.BaseCost * level * 2
+
+        const row = document.createElement('div')
+        row.className = 'upgrade-row'
+        row.innerHTML = `
+            <span>${t.Name}</span>
+            <span>Lvl ${level}</span>
+            <span>Cost: ${upgradeCost} elixir</span>
+            <button class="upgrade-btn" data-troop-id="${t.TroopID}">Upgrade</button>
+        `
+        list.appendChild(row)
+    })
+
+    list.querySelectorAll('.upgrade-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const troopID = parseInt(btn.dataset.troopId)
+            const res = await fetch('/army/upgrade', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ troop_id: troopID })
+            })
+            if (res.ok) {
+                status.style.color = '#6bff6b'
+                status.textContent = 'Troop upgraded!'
+                await loadTroopUpgrades()
+                await loadResources()
+            } else {
+                status.style.color = '#ff6b6b'
+                status.textContent = await res.text()
+            }
+        })
+    })
+}
+
 setInterval(async () => {
     await loadResources()
 }, 30000)
@@ -306,5 +365,12 @@ loadVillage()
 loadShop()
 loadResources()
 loadTrophies()
-console.log("opponent object:", currentOpponent)
-console.log("sending defender_id:", currentOpponent.opponent_id)
+
+document.getElementById('troopUpgradeBtn').addEventListener('click', async () => {
+    await loadTroopUpgrades()
+    document.getElementById('troopUpgradePanel').style.display = 'block'
+})
+
+document.getElementById('closeTroopUpgradeBtn').addEventListener('click', () => {
+    document.getElementById('troopUpgradePanel').style.display = 'none'
+})
