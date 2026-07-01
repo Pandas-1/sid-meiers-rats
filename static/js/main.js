@@ -191,6 +191,24 @@ async function loadResources() {
     }
 }
 
+async function loadTrophies() {
+    try {
+        const res = await fetch('/village/battlehistory', {
+            headers: { 'Authorization': token }
+        });
+        
+        if (res.ok) {
+            const battleHistory = await res.json();
+            document.getElementById('trophiesDisplay').textContent = `Trophies: ${battleHistory.trophies}`;
+        } else {
+            const errorText = await res.text();
+            console.error("3. Request failed. Server said:", errorText);
+        }
+    } catch (error) {
+        console.error("Network or Fetch error:", error);
+    }
+}
+
 document.getElementById('placeBtn').addEventListener('click', () => {
     mode = 'place'
     status.style.color = '#6bff6b'
@@ -287,5 +305,6 @@ document.getElementById('attackBtn').addEventListener('click', startBattle)
 loadVillage()
 loadShop()
 loadResources()
+loadTrophies()
 console.log("opponent object:", currentOpponent)
 console.log("sending defender_id:", currentOpponent.opponent_id)

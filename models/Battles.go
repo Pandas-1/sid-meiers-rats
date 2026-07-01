@@ -27,15 +27,19 @@ func CreateBattle(attackerID, defenderID, r1won, r2won, victoryPct int) error {
 		return fmt.Errorf("failed to insert battle: %w", err)
 	}
 
-	var attackerWon, attackerLost int
-	var defenderWon, defenderLost int
+	var attackerWon, attackerLost, attackerTrophyChange int
+	var defenderWon, defenderLost, defenderTrophyChange int
 
 	if victoryPct > 50 {
 		attackerWon, attackerLost = 1, 0
 		defenderWon, defenderLost = 0, 1
+		attackerTrophyChange = +25
+		defenderTrophyChange = -15
 	} else {
 		attackerWon, attackerLost = 0, 1
 		defenderWon, defenderLost = 1, 0
+		attackerTrophyChange= -10
+		defenderTrophyChange = 10
 	}
 
 	_, err = db.DB.Exec(`
@@ -45,8 +49,9 @@ func CreateBattle(attackerID, defenderID, r1won, r2won, victoryPct int) error {
 		DO UPDATE SET 
 			number_of_battles = user_battle_history.number_of_battles + 1,
 			battles_won = user_battle_history.battles_won + $2,
-			battles_lost = user_battle_history.battles_lost + $3
-	`, attackerID, attackerWon, attackerLost)
+			battles_lost = user_battle_history.battles_lost + $3,
+			trophies = GREATEST(0, user_battle_history.trophies + $4)
+	`, attackerID, attackerWon, attackerLost, attackerTrophyChange)
 
 	if err != nil {
 		return fmt.Errorf("failed to update attacker history: %w", err)
@@ -59,8 +64,9 @@ func CreateBattle(attackerID, defenderID, r1won, r2won, victoryPct int) error {
 		DO UPDATE SET 
 			number_of_battles = user_battle_history.number_of_battles + 1,
 			battles_won = user_battle_history.battles_won + $2,
-			battles_lost = user_battle_history.battles_lost + $3
-	`, defenderID, defenderWon, defenderLost)
+			battles_lost = user_battle_history.battles_lost + $3,
+			trophies = GREATEST(0, user_battle_history.trophies + $4)
+	`, defenderID, defenderWon, defenderLost, defenderTrophyChange)
 
 	return err
 }

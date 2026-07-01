@@ -103,3 +103,16 @@ func GetCity(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(city)
 }
+
+
+func GetUserBattleHistory(w http.ResponseWriter, r *http.Request) {
+    userID := r.Context().Value(UserIDKey).(int)
+    battleHistory, err := models.GetUserBattleHistory(userID)
+    if err != nil {
+        log.Println("GetBattleHistory error:", err)
+        http.Error(w, "Failed to fetch BattleHistory", http.StatusInternalServerError)
+        return
+    }
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(battleHistory)
+}
