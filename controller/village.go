@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"rats/models"
     "log"
+    "strconv"
+    "github.com/go-chi/chi/v5"
 )
 
 func GetVillage(w http.ResponseWriter, r *http.Request) {
@@ -115,4 +117,26 @@ func GetUserBattleHistory(w http.ResponseWriter, r *http.Request) {
     }
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(battleHistory)
+}
+
+func GetBuildingInfo(w http.ResponseWriter, r *http.Request) {
+    instanceID, _ := strconv.Atoi(chi.URLParam(r, "instanceID"))
+
+    b, err := models.GetUserBuildingInstance(instanceID)
+    if err != nil {
+        http.Error(w, "Building not found", http.StatusNotFound)
+        return
+    }
+
+    current, _ := models.GetBuildingStatsAtLevel(b.BuildingID, b.Level)
+    next, _ := models.GetBuildingStatsAtLevel(b.BuildingID, b.Level+1)
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(map[string]interface{}{
+        "current_level":   b.Level,
+        "current":         current,
+        "next":            next,
+        "upgrade_cost_r1": current.CostResource1*b.Level*2,
+        "upgrade_cost_r2": current.CostResource2*b.Level*2,
+    })
 }

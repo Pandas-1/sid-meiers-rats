@@ -12,4 +12,5 @@ func villageRoutes(r chi.Router) {
     r.Put("/village/upgrade", controller.UpgradeBuilding)
     r.Get("/city", controller.GetCity)
     r.Get("/village/battlehistory", controller.GetUserBattleHistory)
+    r.Get("/building/{instanceID}/info", controller.GetBuildingInfo)
 }

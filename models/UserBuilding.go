@@ -216,3 +216,21 @@ func BuildingBelongsToUser(instanceID, userID int) (bool, error) {
     ).Scan(&count)
     return count > 0, err
 }
+
+func GetUserBuildingInstance(instanceID int) (UserBuilding, error) {
+    var b UserBuilding
+    err := db.DB.QueryRow(
+        `SELECT ub.instance_id, ub.user_id, ub.building_id, ub.level,
+                ub.grid_x, ub.grid_y, bd.width, bd.height, bd.name,
+                bd.building_type, bd.element_type, bd.health_bar,
+                bd.defence_attack, bd.defence_range
+         FROM user_buildings ub
+         JOIN building_details bd ON ub.building_id = bd.building_id
+         WHERE ub.instance_id = $1`,
+        instanceID,
+    ).Scan(&b.InstanceID, &b.UserID, &b.BuildingID, &b.Level,
+        &b.GridX, &b.GridY, &b.Width, &b.Height, &b.Name,
+        &b.BuildingType, &b.ElementType, &b.HealthBar,
+        &b.DefenceAttack, &b.DefenceRange)
+    return b, err
+}
