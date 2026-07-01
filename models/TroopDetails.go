@@ -69,3 +69,13 @@ func GetAllTroopDetails() ([]Troop, error) {
     }
     return troops, nil
 }
+
+func GetTroopStatsAtLevel(troopID int, level int) (Troop, error) {
+    t, err := GetTroopDetails(troopID)
+    if err != nil {
+        return t, err
+    }
+    t.TroopAttackPower = t.TroopAttackPower + (2 * (level - 1))
+    t.Defence = t.Defence + (2 * (level - 1))
+    return t, nil
+}

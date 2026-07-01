@@ -89,18 +89,18 @@ func NewSession(attackerID int, defenderID int) (*BattleSession, error) {
 		}
 		armyPool[comp.TroopID] = details
 	}
-
 	buildings := []BuildingState{}
 	for _, b := range villageBuildings {
+		adjustedStats, _ := models.GetBuildingStatsAtLevel(b.BuildingID, b.Level)
 		buildings = append(buildings, BuildingState{
 			InstanceID:  b.InstanceID,
 			X:           b.GridX,
 			Y:           b.GridY,
 			Width:       b.Width,
 			Height:      b.Height,
-			CurrentHP:   b.HealthBar,
-			MaxHP:       b.HealthBar,
-			Attack:      b.DefenceAttack,
+			CurrentHP:   adjustedStats.HealthBar,
+			MaxHP:       adjustedStats.HealthBar,
+			Attack:      adjustedStats.DefenceAttack,
 			Range:       b.DefenceRange,
 			Name:        b.Name,
 			ElementType: b.ElementType,
@@ -139,14 +139,19 @@ func (s *BattleSession) Tick() {
 		if !ok {
 			continue
 		}
+		troopLevel, err := models.GetTroopLevel(s.AttackerID, drop.TroopID)
+		if err != nil {
+			troopLevel = 1 // fallback to level 1 if not found
+		}
+		adjustedStats, _ := models.GetTroopStatsAtLevel(drop.TroopID, troopLevel)
 		s.Troops = append(s.Troops, TroopState{
 			ID:          s.NextTroopID,
 			TroopID:     drop.TroopID,
 			X:           float64(drop.X),
 			Y:           float64(drop.Y),
-			CurrentHP:   details.Defence,
-			MaxHP:       details.Defence,
-			Attack:      details.TroopAttackPower,
+			CurrentHP:   adjustedStats.Defence,
+			MaxHP:       adjustedStats.Defence,
+			Attack:      adjustedStats.TroopAttackPower,
 			Range:       float64(details.Range),
 			Speed:       float64(details.MovementSpeed) * 0.05,
 			Name:        details.Name,

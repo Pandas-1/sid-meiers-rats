@@ -74,3 +74,14 @@ func GetAllBuildingDetails() ([]BuildingDetails, error) {
     }
     return buildings, nil
 }
+
+func GetBuildingStatsAtLevel(buildingID int, level int) (BuildingDetails, error) {
+    b, err := GetBuildingDetails(buildingID)
+    if err != nil {
+        return b, err
+    }
+    // apply scaling
+    b.HealthBar = b.HealthBar + (b.Scaling * (level - 1))
+    b.DefenceAttack = b.DefenceAttack + (b.Scaling * (level - 1))
+    return b, nil
+}
