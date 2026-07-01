@@ -15,7 +15,7 @@ VALUES
 -- buildings
 INSERT INTO building_details (name, building_type, production, scaling, health_bar, width, height, defence_attack, defence_range, max_level, cost_resource1, cost_resource2, element_type)
 VALUES
-('Town Hall',        'base',     10, 0, 500, 4, 4,   0,  0, ARRAY[4,4,4,4], 2000, 2000, 0),
+('Town Hall',        'base',     10, 4, 500, 4, 4,   0,  0, ARRAY[4,4,4,4], 2000, 2000, 0),
 ('Fire Tower',       'defense',  0, 2, 100, 2, 2, 100,  8, ARRAY[3,5,7,9],    0,  200, 2),
 ('Water Faucet',     'defense',  0, 2, 100, 2, 2, 100,  5, ARRAY[3,5,7,9],    0,  200, 3),
 ('Air Missiles',     'defense',  0, 2, 100, 2, 2, 100, 10, ARRAY[3,5,7,9],    0,  200, 4),
