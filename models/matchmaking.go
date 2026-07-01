@@ -3,6 +3,7 @@ package models
 import (
 	"rats/db"
 	"fmt"
+    "sync"
 )
 
 type MatchmakingResult struct {
@@ -10,6 +11,9 @@ type MatchmakingResult struct {
     OpponentUsername string `json:"opponent_username"`
     OpponentTrophies int    `json:"opponent_trophies"`
 }
+
+var PendingMatches = map[int]int{} // attackerID -> defenderID
+var PendingMatchesMu sync.Mutex
 
 func FindOpponent(userID int) (MatchmakingResult, error) {
     var userTrophies int
@@ -35,10 +39,7 @@ func FindOpponent(userID int) (MatchmakingResult, error) {
     `, userID, userTrophies-100, userTrophies+100,
     ).Scan(&result.OpponentID, &result.OpponentUsername, &result.OpponentTrophies)
 
-    if err == nil {
-        return result, nil
-    }
-
+    if err != nil {
     // widen to ±300 if nobody found
     err = db.DB.QueryRow(`
         SELECT u.user_id, u.username, ubh.trophies
@@ -54,6 +55,10 @@ func FindOpponent(userID int) (MatchmakingResult, error) {
     if err != nil {
         return MatchmakingResult{}, fmt.Errorf("no opponent found")
     }
+    }
+    PendingMatchesMu.Lock()
+    PendingMatches[userID] = result.OpponentID
+    PendingMatchesMu.Unlock()
 
     return result, nil
 }
