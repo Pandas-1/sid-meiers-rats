@@ -6,7 +6,7 @@ import(
 	"github.com/lib/pq"
 )
 
-type UserTroopDetails struct {
+type UserTroopDetail struct {
 	UserID int 
 	TroopID int
 	TroopLevel int
@@ -76,4 +76,27 @@ func LevelUpTroop(userID int, troopID int) error {
 	)
 	
 	return err
+}
+
+
+func GetUserTroops(userID int) ([]UserTroopDetail, error) {
+    rows, err := db.DB.Query(
+        "SELECT user_id, troop_id, troop_level FROM user_troop_details WHERE user_id = $1",
+        userID,
+    )
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var troops []UserTroopDetail
+    for rows.Next() {
+        var t UserTroopDetail
+        err := rows.Scan(&t.UserID, &t.TroopID, &t.TroopLevel)
+        if err != nil {
+            return nil, err
+        }
+        troops = append(troops, t)
+    }
+    return troops, nil
 }

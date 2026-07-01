@@ -60,3 +60,14 @@ func LevelUpTroop(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(map[string]string{"message": "troop upgraded"})
 }
+
+func GetUserTroops(w http.ResponseWriter, r *http.Request) {
+    userID := r.Context().Value(UserIDKey).(int)
+    troops, err := models.GetUserTroops(userID)
+    if err != nil {
+        http.Error(w, "Failed to fetch troops", http.StatusInternalServerError)
+        return
+    }
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(troops)
+}
