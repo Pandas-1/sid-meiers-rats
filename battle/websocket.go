@@ -75,9 +75,6 @@ func runSession(battleID int, session *BattleSession) {
 }
 
 func BattleWSHandler(w http.ResponseWriter, r *http.Request) {
-    // get battleID from query param and token verification
-
-        log.Printf("WS request received")
 
     tokenString := r.URL.Query().Get("token")
     if tokenString == "" {
@@ -93,12 +90,14 @@ func BattleWSHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    // extract userID from token
+    claims := token.Claims.(jwt.MapClaims)
+    userID := int(claims["userID"].(float64))
 
     battleIDStr := r.URL.Query().Get("battle_id")
     var battleID int
-    json.Unmarshal([]byte(battleIDStr), &battleID)
+    fmt.Sscanf(battleIDStr, "%d", &battleID)
 
-    // get session
     sessionsMu.Lock()
     session, exists := activeSessions[battleID]
     sessionsMu.Unlock()
@@ -108,27 +107,36 @@ func BattleWSHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    // upgrade to WebSocket
+    // verify user is part of this battle
+    isAttacker := userID == session.AttackerID
+    isDefender := userID == session.DefenderID
+    if !isAttacker && !isDefender {
+        http.Error(w, "Not authorized to view this battle", 403)
+        return
+    }
+
     conn, err := upgrader.Upgrade(w, r, nil)
     if err != nil {
         return
     }
-    session.ClientConnected = true 
     defer conn.Close()
+    session.ClientConnected = true
 
-    // set callback — every tick sends state to this client
     session.OnTick = func(state BattleState) {
         data, _ := json.Marshal(state)
         conn.WriteMessage(websocket.TextMessage, data)
     }
 
-    // read troop drops from client
     for {
         _, msg, err := conn.ReadMessage()
         if err != nil {
-            // client disconnected
             session.OnTick = nil
             break
+        }
+
+        // only attacker can drop troops
+        if !isAttacker {
+            continue
         }
 
         var drop TroopDrop

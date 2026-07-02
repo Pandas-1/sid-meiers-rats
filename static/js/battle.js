@@ -109,3 +109,8 @@ document.getElementById('returnBtn').addEventListener('click', () => {
 })
 
 loadArmy()
+const role = params.get('role') || 'spectator'
+if (role !== 'attacker') {
+    document.getElementById('troopSelector').style.display = 'none'
+    document.getElementById('status').textContent = 'Spectating battle...'
+}
