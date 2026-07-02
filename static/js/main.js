@@ -91,7 +91,16 @@ ctx.canvas.addEventListener('click', async function(e) {
             mode = null
             await loadVillage()
         }   
+    } else {
+    // no mode — check if clicked a building
+    const clicked = buildings.find(b =>
+        x >= b.GridX && x < b.GridX + b.Width &&
+        y >= b.GridY && y < b.GridY + b.Height
+    )
+    if (clicked) {
+        await showBuildingPopup(clicked)
     }
+}
 })
 
 async function loadTroops() {
@@ -351,6 +360,66 @@ async function loadTroopUpgrades() {
                 status.textContent = await res.text()
             }
         })
+    })
+}
+
+async function showBuildingPopup(building) {
+    const res = await fetch(`/building/${building.InstanceID}/info`, {
+        headers: { 'Authorization': token }
+    })
+    if (!res.ok) return
+    const info = await res.json()
+
+    let popup = document.getElementById('buildingPopup')
+    if (!popup) {
+        popup = document.createElement('div')
+        popup.id = 'buildingPopup'
+        document.body.appendChild(popup)
+    }
+
+    popup.innerHTML = `
+        <h3>${building.Name} (Level ${info.current_level})</h3>
+        <hr>
+        <p><b>Current Stats</b></p>
+        <p>HP: ${info.current.HealthBar}</p>
+        <p>Attack: ${info.current.DefenceAttack}</p>
+        <hr>
+        <p><b>Next Level Stats</b></p>
+        <p>HP: ${info.next.HealthBar}</p>
+        <p>Attack: ${info.next.DefenceAttack}</p>
+        <hr>
+        <p>Upgrade Cost: ${info.upgrade_cost_r1} gold / ${info.upgrade_cost_r2} elixir</p>
+        <div style="display:flex; gap:8px; margin-top:10px">
+            <button id="upgradeConfirmBtn">Upgrade</button>
+            <button id="closePopupBtn">Close</button>
+        </div>
+    `
+    popup.style.display = 'block'
+
+    document.getElementById('closePopupBtn').addEventListener('click', () => {
+        popup.style.display = 'none'
+    })
+
+    document.getElementById('upgradeConfirmBtn').addEventListener('click', async () => {
+        const res = await fetch('/village/upgrade', {
+            method: 'PUT',
+            headers: {
+                'Authorization': token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ instance_id: building.InstanceID })
+        })
+        if (res.ok) {
+            status.style.color = '#6bff6b'
+            status.textContent = 'Building upgraded!'
+            popup.style.display = 'none'
+            await loadVillage()
+            await loadResources()
+        } else {
+            status.style.color = '#ff6b6b'
+            status.textContent = await res.text()
+            popup.style.display = 'none'
+        }
     })
 }
 
