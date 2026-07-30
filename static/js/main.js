@@ -270,7 +270,7 @@ async function findOpponent() {
     if (res.ok) {
         currentOpponent = await res.json()
         console.log("opponent:", currentOpponent)
-        document.getElementById('opponentInfo').textContent = 
+        document.getElementById('status').textContent = 
             `Found: ${currentOpponent.opponent_username} (${currentOpponent.opponent_trophies} trophies)`
         document.getElementById('attackBtn').style.display = 'block'
     } else {

@@ -172,3 +172,8 @@ select, button {
     border-color: #444;
     margin: 8px 0;
 }
+
+#matchmaking  {
+    display: flex;
+    gap: 8px;
+}
