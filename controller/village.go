@@ -34,7 +34,7 @@ func PlaceBuilding(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&input)
 	err := models.PlaceBuilding(userID, input.BuildingID, input.X , input.Y)
 	if err != nil {
-        http.Error(w, "Failed to Place Building", http.StatusInternalServerError)
+        http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
 	w.Header().Set("Content-Type", "application/json")
