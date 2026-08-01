@@ -33,7 +33,7 @@ WHERE u.username LIKE 'testuser%';
 -- place all defense buildings for test users in a grid pattern
 INSERT INTO user_buildings (user_id, building_id, level, grid_x, grid_y)
 SELECT u.user_id, bd.building_id, 3,
-    10 + (ROW_NUMBER() OVER (PARTITION BY u.user_id ORDER BY bd.building_id) * 5),
+    2 + (ROW_NUMBER() OVER (PARTITION BY u.user_id ORDER BY bd.building_id) * 5),
     10
 FROM users u
 CROSS JOIN building_details bd
