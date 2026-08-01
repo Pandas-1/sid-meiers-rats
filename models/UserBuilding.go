@@ -24,6 +24,8 @@ type UserBuilding struct {
     DefenceRange  int    
 }
 
+const GridSize = 50
+
 func PlaceBuilding(userID, buildingID, x, y int) error {
     //  get building size
     var width, height, costR1, costR2 int
@@ -34,6 +36,10 @@ func PlaceBuilding(userID, buildingID, x, y int) error {
     if err != nil {
         return fmt.Errorf("building not found: %w", err)
     }
+
+    if x < 0 || y < 0 || x+width > GridSize || y+height > GridSize {
+    return fmt.Errorf("building placement out of bounds")
+}
 
     //  overlap
     var count int
@@ -123,6 +129,11 @@ func MoveBuilding(InstanceID int, x int, y int) error {
     if err != nil {
         return err
     }
+
+    if x < 0 || y < 0 || x+width > GridSize || y+height > GridSize {
+    return fmt.Errorf("building placement out of bounds")
+    }
+
     var count int
     err = db.DB.QueryRow(
         `SELECT COUNT(*) FROM user_buildings ub
