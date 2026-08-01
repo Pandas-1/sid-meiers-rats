@@ -35,8 +35,7 @@ async function loadShop() {
 
 ctx.canvas.addEventListener('click', async function(e) {
     const rect = ctx.canvas.getBoundingClientRect()
-    const x = Math.floor((e.clientX - rect.left) / CELL_SIZE)
-    const y = Math.floor((e.clientY - rect.top) / CELL_SIZE)
+    const { x, y } = toGrid(e.clientX - rect.left, e.clientY - rect.top)
 
     if (mode === 'place') {
         const buildingID = parseInt(buildingSelect.value)
@@ -105,13 +104,15 @@ ctx.canvas.addEventListener('click', async function(e) {
 
 async function loadTroops() {
     // fetch both shop troops and current army simultaneously
-    const [troopRes, armyRes] = await Promise.all([
+    const [troopRes, armyRes, levelRes] = await Promise.all([
         fetch('/shop/troops', { headers: { 'Authorization': token } }),
-        fetch('/army', { headers: { 'Authorization': token } })
+        fetch('/army', { headers: { 'Authorization': token } }),
+        fetch('/army/troops', {headers: { 'Authorization': token}})
     ])
 
     availableTroops = await troopRes.json()
     const currentArmy = await armyRes.json()
+    const troopLevels = await levelRes.json()
 
     // build lookup of current quantities
     const currentComp = {}
@@ -120,6 +121,13 @@ async function loadTroops() {
             currentComp[c.troop_id] = c.quantity
         })
     }
+
+    // level per troop of the user for the cost formula
+
+    const levelByTroop = {}
+    troopLevels.forEach(t => {
+        levelByTroop[t.TroopID] = t.TroopLevel
+    })
 
     const troopList = document.getElementById('troopList')
     troopList.innerHTML = `
@@ -133,12 +141,13 @@ async function loadTroops() {
 
     availableTroops.forEach(t => {
         const currentQty = currentComp[t.TroopID] || 0
+        const level = levelByTroop[t.TroopID] || 1
         const row = document.createElement('div')
         row.className = 'troop-row'
         row.innerHTML = `
             <span>${t.Name}</span>
             <span>${t.TroopArmySpace}</span>
-            <span>${t.BaseCost}</span>
+            <span>${t.BaseCost*level}</span>
             <input type="number" min="0" value="${currentQty}" id="troop_${t.TroopID}">
         `
         troopList.appendChild(row)
@@ -181,6 +190,7 @@ async function trainArmy() {
         status.style.color = '#6bff6b'
         status.textContent = 'Army trained!'
         document.getElementById('armyPanel').style.display = 'none'
+        await loadResources()
     } else {
         status.style.color = '#ff6b6b'
         status.textContent = await res.text()
