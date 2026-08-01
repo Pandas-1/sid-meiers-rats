@@ -1,0 +1,91 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #1a1a2e;
+    color: white;
+    font-family: sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+h1 {
+    text-align: center;
+    color: #FFD700;
+    font-size: 1.6rem;
+    margin-bottom: 4px;
+}
+
+h3 {
+    text-align: center;
+    color: #aaa;
+    font-weight: normal;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+}
+
+.form-box {
+    background: #2a2a4a;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 28px;
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.form-box input {
+    padding: 10px;
+    background: #1a1a2e;
+    color: white;
+    border: 1px solid #444;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.form-box input:focus {
+    outline: none;
+    border-color: #4a90d9;
+}
+
+.form-box button {
+    padding: 10px;
+    background: #2a2a4a;
+    color: white;
+    border: 1px solid #444;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.15s;
+}
+
+.form-box button:hover {
+    background: #3a3a5a;
+}
+
+#loginBtn {
+    background: #4a90d9;
+    border-color: #4a90d9;
+}
+
+#loginBtn:hover {
+    background: #3a7bc8;
+}
+
+#message {
+    text-align: center;
+    font-size: 0.8rem;
+    min-height: 1em;
+    color: #ff6b6b;
+}

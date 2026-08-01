@@ -73,7 +73,7 @@ func CreateUser(username, passwordHash string) error {
         VALUES 
             ($1, (SELECT building_id FROM building_details WHERE name = 'Town Hall'), 1, 23, 23),
             ($1, (SELECT building_id FROM building_details WHERE name = 'Gold Mine'), 1, 10, 20),
-            ($1, (SELECT building_id FROM building_details WHERE name = 'Elixir Collector'), 1, 30, 20)
+            ($1, (SELECT building_id FROM building_details WHERE name = 'Elixir Collector'), 1, 20, 20)
     `, userID)
     if err != nil {
         return fmt.Errorf("could not place starting bildings: %w", err)
