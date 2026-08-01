@@ -1,11 +1,31 @@
 const GRID_SIZE = 50
 const CELL_SIZE = 16
 const imageCache = {}
+const TILE_W = 24
+const TILE_H = 12
+const ORIGIN_X = GRID_SIZE * TILE_W / 2
+const ORIGIN_Y = 40
+
+function toScreen(gridX, gridY) {
+    return {
+        x: (gridX - gridY) * (TILE_W / 2) + ORIGIN_X,
+        y: (gridX + gridY) * (TILE_H / 2) + ORIGIN_Y,
+    }
+}
+
+function toGrid(screenX, screenY) {
+    const dx = screenX - ORIGIN_X
+    const dy = screenY - ORIGIN_Y
+    return {
+        x: Math.floor((dx / (TILE_W / 2) + dy / (TILE_H / 2)) / 2),
+        y: Math.floor((dy / (TILE_H / 2) - dx / (TILE_W / 2)) / 2),
+    }
+}
 
 function initCanvas() {
     const canvas = document.getElementById('gameCanvas')
-    canvas.width = GRID_SIZE * CELL_SIZE
-    canvas.height = GRID_SIZE * CELL_SIZE
+    canvas.width = GRID_SIZE * TILE_W
+    canvas.height = GRID_SIZE * TILE_H + ORIGIN_Y * 2
     return canvas.getContext('2d')
 }
 
@@ -13,15 +33,19 @@ function drawGrid(ctx) {
     ctx.strokeStyle = '#2a2a4a'
     ctx.lineWidth = 0.5
     for (let x = 0; x <= GRID_SIZE; x++) {
+        const a = toScreen(x, 0)
+        const b = toScreen(x, GRID_SIZE)
         ctx.beginPath()
-        ctx.moveTo(x * CELL_SIZE, 0)
-        ctx.lineTo(x * CELL_SIZE, GRID_SIZE * CELL_SIZE)
+        ctx.moveTo(a.x, a.y)
+        ctx.lineTo(b.x, b.y)
         ctx.stroke()
     }
     for (let y = 0; y <= GRID_SIZE; y++) {
+        const a = toScreen(0, y)
+        const b = toScreen(GRID_SIZE, y)
         ctx.beginPath()
-        ctx.moveTo(0, y * CELL_SIZE)
-        ctx.lineTo(GRID_SIZE * CELL_SIZE, y * CELL_SIZE)
+        ctx.moveTo(a.x, a.y)
+        ctx.lineTo(b.x, b.y)
         ctx.stroke()
     }
 }
@@ -36,41 +60,43 @@ function drawHPBar(ctx, x, y, w, currentHP, maxHP) {
 }
 
 function drawBuilding(ctx, building) {
-    const x = building.x * CELL_SIZE
-    const y = building.y * CELL_SIZE      
-    const w = building.width * CELL_SIZE  
-    const h = building.height * CELL_SIZE 
+    const north = toScreen(building.x, building.y)
+    const w = (building.width + building.height) * (TILE_W / 2)
+    const h = (building.width + building.height) * (TILE_H / 2)
 
-    const img = getImage(building.name)   // ← lowercase
-    if (img.complete && img.naturalWidth > 0) {
-        ctx.drawImage(img, x, y, w, h)
+    const drawX = north.x - w / 2
+    const drawY = north.y
+
+    const img = getImage(building.name)
+    if (img.complete) {
+        ctx.drawImage(img, drawX, drawY, w, h)
     } else {
         ctx.fillStyle = '#32475e'
-        ctx.fillRect(x, y, w, h)
-        img.onload = () => ctx.drawImage(img, x, y, w, h)
+        ctx.fillRect(drawX, drawY, w, h)
+        img.onload = () => ctx.drawImage(img, drawX, drawY, w, h)
     }
 
     ctx.fillStyle = '#ffffff'
     ctx.font = '8px sans-serif'
-    ctx.fillText(building.name, x + 2, y + 10)  // ← lowercase
+    ctx.fillText(building.name, drawX + 2, drawY + 10)
 
-    drawHPBar(ctx, x, y, w, building.current_hp, building.max_hp)
+    drawHPBar(ctx, drawX, drawY, w, building.current_hp, building.max_hp)
 }
+
 function drawTroop(ctx, t) {
-    const x = t.x * CELL_SIZE
-    const y = t.y * CELL_SIZE
-    const size = CELL_SIZE * 0.8
+    const { x, y } = toScreen(t.x, t.y)
+    const size = TILE_W * 0.5
 
     ctx.fillStyle = '#ff6b6b'
     ctx.beginPath()
-    ctx.arc(x, y, size / 2, 0, Math.PI * 2)
+    ctx.arc(x, y - size / 2, size / 2, 0, Math.PI * 2)
     ctx.fill()
 
     ctx.fillStyle = '#ffffff'
     ctx.font = '6px sans-serif'
-    ctx.fillText(t.name[0], x - 2, y + 2)
+    ctx.fillText(t.name[0], x - 2, y - size / 2 + 2)
 
-    drawHPBar(ctx, x - size/2, y - size/2, size, t.current_hp, t.max_hp)
+    drawHPBar(ctx, x - size / 2, y - size, size, t.current_hp, t.max_hp)
 }
 
 function renderBattle(ctx, state) {

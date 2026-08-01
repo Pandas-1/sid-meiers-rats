@@ -81,8 +81,7 @@ ctx.canvas.addEventListener('click', (e) => {
     }
 
     const rect = ctx.canvas.getBoundingClientRect()
-    const x = Math.floor((e.clientX - rect.left) / CELL_SIZE)
-    const y = Math.floor((e.clientY - rect.top) / CELL_SIZE)
+    const { x, y } = toGrid(e.clientX - rect.left, e.clientY - rect.top)
 
     ws.send(JSON.stringify({ troop_id: selectedTroopID, x, y }))
 

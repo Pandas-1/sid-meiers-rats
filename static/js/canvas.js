@@ -1,11 +1,31 @@
 const GRID_SIZE = 50
 const CELL_SIZE = 16 // 800px / 50 cells
 const imageCache = {}
+const TILE_W = 24
+const TILE_H = 12
+const ORIGIN_X = GRID_SIZE * TILE_W / 2
+const ORIGIN_Y = 40
+
+function toScreen(gridX, gridY) {
+    return {
+        x: (gridX - gridY) * (TILE_W / 2) + ORIGIN_X,
+        y: (gridX + gridY) * (TILE_H / 2) + ORIGIN_Y,
+    }
+}
+
+function toGrid(screenX, screenY) {
+    const dx = screenX - ORIGIN_X
+    const dy = screenY - ORIGIN_Y
+    return {
+        x: Math.floor((dx / (TILE_W / 2) + dy / (TILE_H / 2)) / 2),
+        y: Math.floor((dy / (TILE_H / 2) - dx / (TILE_W / 2)) / 2),
+    }
+}
 
 function initCanvas() {
     const canvas = document.getElementById('gameCanvas')
-    canvas.width = GRID_SIZE * CELL_SIZE
-    canvas.height = GRID_SIZE * CELL_SIZE
+    canvas.width = GRID_SIZE * TILE_W
+    canvas.height = GRID_SIZE * TILE_H + ORIGIN_Y * 2
     return canvas.getContext('2d')
 }
 
@@ -21,37 +41,41 @@ function drawGrid(ctx) {
     ctx.strokeStyle = '#2a2a4a'
     ctx.lineWidth = 0.5
     for (let x = 0; x <= GRID_SIZE; x++) {
+        const a = toScreen(x, 0)
+        const b = toScreen(x, GRID_SIZE)
         ctx.beginPath()
-        ctx.moveTo(x * CELL_SIZE, 0)
-        ctx.lineTo(x * CELL_SIZE, GRID_SIZE * CELL_SIZE)
+        ctx.moveTo(a.x, a.y)
+        ctx.lineTo(b.x, b.y)
         ctx.stroke()
     }
     for (let y = 0; y <= GRID_SIZE; y++) {
+        const a = toScreen(0, y)
+        const b = toScreen(GRID_SIZE, y)
         ctx.beginPath()
-        ctx.moveTo(0, y * CELL_SIZE)
-        ctx.lineTo(GRID_SIZE * CELL_SIZE, y * CELL_SIZE)
+        ctx.moveTo(a.x, a.y)
+        ctx.lineTo(b.x, b.y)
         ctx.stroke()
     }
 }
 
 function drawBuilding(ctx, building) {
-    const x = building.GridX * CELL_SIZE
-    const y = building.GridY * CELL_SIZE
-    const w = building.Width * CELL_SIZE
-    const h = building.Height * CELL_SIZE
+    const north = toScreen(building.GridX, building.GridY)
+    const w = (building.Width + building.Height) * (TILE_W / 2)
+    const h = (building.Width + building.Height) * (TILE_H / 2)
+
+    const drawX = north.x - w / 2
+    const drawY = north.y
 
     const img = getImage(building.Name)
     if (img.complete) {
-        ctx.drawImage(img, x, y, w, h)
+        ctx.drawImage(img, drawX, drawY, w, h)
     } else {
-        // fallback color while image loads
         ctx.fillStyle = '#32475e'
-        ctx.fillRect(x, y, w, h)
-        img.onload = () => ctx.drawImage(img, x, y, w, h)
+        ctx.fillRect(drawX, drawY, w, h)
+        img.onload = () => ctx.drawImage(img, drawX, drawY, w, h)
     }
 
-    // building name label
     ctx.fillStyle = '#ffffff'
     ctx.font = '8px sans-serif'
-    ctx.fillText(building.Name, x + 2, y + 10)
+    ctx.fillText(building.Name, drawX + 2, drawY + 10)
 }
