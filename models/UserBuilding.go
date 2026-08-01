@@ -24,7 +24,7 @@ type UserBuilding struct {
     DefenceRange  int    
 }
 
-const GridSize = 50
+const GridSize = 30
 
 func PlaceBuilding(userID, buildingID, x, y int) error {
     //  get building size
