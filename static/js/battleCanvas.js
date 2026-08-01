@@ -1,10 +1,22 @@
-const GRID_SIZE = 50
-const CELL_SIZE = 16
+const GRID_SIZE = 30
+const CELL_SIZE = 16 // 800px / 50 cells
 const imageCache = {}
-const TILE_W = 24
-const TILE_H = 12
+const TILE_W = 38.4
+const TILE_H = 21.6
 const ORIGIN_X = GRID_SIZE * TILE_W / 2
 const ORIGIN_Y = 40
+const grassA = new Image()
+grassA.src = '/static/images/terrain/grass_a.png'
+const grassB = new Image()
+grassB.src = '/static/images/terrain/grass_b.png'
+
+
+function drawTerrainTile(ctx, gx, gy) {
+    const p = toScreen(gx, gy)
+    const img = (gx + gy) % 2 === 0 ? grassA : grassB
+    if (!img.complete) return
+    ctx.drawImage(img, p.x - TILE_W / 2, p.y, TILE_W, TILE_H)
+}
 
 function toScreen(gridX, gridY) {
     return {
@@ -30,6 +42,11 @@ function initCanvas() {
 }
 
 function drawGrid(ctx) {
+    for (let gx = 0; gx < GRID_SIZE; gx++) {
+        for (let gy = 0; gy < GRID_SIZE; gy++) {
+            drawTerrainTile(ctx, gx, gy)
+        }
+    }
     ctx.strokeStyle = '#2a2a4a'
     ctx.lineWidth = 0.5
     for (let x = 0; x <= GRID_SIZE; x++) {
