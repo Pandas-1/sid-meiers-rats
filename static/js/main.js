@@ -50,6 +50,7 @@ ctx.canvas.addEventListener('click', async function(e) {
         if (res.ok) {
             status.textContent = 'Building placed!'
             mode = null
+            loadResources()
             await loadVillage()
         } else {
             status.style.color = '#ff6b6b'

@@ -177,3 +177,8 @@ select, button {
     display: flex;
     gap: 8px;
 }
+
+button:hover { background: #3a3a5a; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+input:focus, select:focus { outline: none; border-color: #4a90d9; }
+.troop-row:hover { background: rgba(255,255,255,0.03); }
