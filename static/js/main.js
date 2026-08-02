@@ -282,7 +282,7 @@ async function findOpponent() {
         currentOpponent = await res.json()
         console.log("opponent:", currentOpponent)
         document.getElementById('status').textContent = 
-            `Found: ${currentOpponent.opponent_username} (${currentOpponent.opponent_trophies} trophies)`
+            `Found: ${currentOpponent.opponent_username} (${currentOpponent.opponent_trophies} trophies) Gold: ${Math.round(currentOpponent.opponent_gold*0.3)} Elixir: ${Math.round(currentOpponent.opponent_elixir*0.3)}`
         document.getElementById('attackBtn').style.display = 'block'
     } else {
         status.style.color = '#ff6b6b'

@@ -10,6 +10,8 @@ type MatchmakingResult struct {
     OpponentID       int    `json:"opponent_id"`
     OpponentUsername string `json:"opponent_username"`
     OpponentTrophies int    `json:"opponent_trophies"`
+    OpponentGold     int64  `json:"opponent_gold"`
+    OpponentElixir   int64  `json:"opponent_elixir"`
 }
 
 var PendingMatches = map[int]int{} // attackerID -> defenderID
@@ -29,28 +31,30 @@ func FindOpponent(userID int) (MatchmakingResult, error) {
 
     // try tight range first ±100
     err = db.DB.QueryRow(`
-        SELECT u.user_id, u.username, ubh.trophies
+        SELECT u.user_id, u.username, ubh.trophies, cd.resource1, cd.resource2
         FROM users u
         JOIN user_battle_history ubh ON u.user_id = ubh.user_id
+        JOIN city_details cd ON u.user_id = cd.user_id
         WHERE u.user_id != $1
         AND ubh.trophies BETWEEN $2 AND $3
         ORDER BY RANDOM()
         LIMIT 1
     `, userID, userTrophies-100, userTrophies+100,
-    ).Scan(&result.OpponentID, &result.OpponentUsername, &result.OpponentTrophies)
+    ).Scan(&result.OpponentID, &result.OpponentUsername, &result.OpponentTrophies, &result.OpponentGold, &result.OpponentElixir)
 
     if err != nil {
     // widen to ±300 if nobody found
     err = db.DB.QueryRow(`
-        SELECT u.user_id, u.username, ubh.trophies
+        SELECT u.user_id, u.username, ubh.trophies, cd.resource1, cd.resource2
         FROM users u
         JOIN user_battle_history ubh ON u.user_id = ubh.user_id
+        JOIN city_details cd ON u.user_id = cd.user_id
         WHERE u.user_id != $1
         AND ubh.trophies BETWEEN $2 AND $3
         ORDER BY RANDOM()
         LIMIT 1
     `, userID, userTrophies-300, userTrophies+300,
-    ).Scan(&result.OpponentID, &result.OpponentUsername, &result.OpponentTrophies)
+    ).Scan(&result.OpponentID, &result.OpponentUsername, &result.OpponentTrophies, &result.OpponentGold, &result.OpponentElixir)
 
     if err != nil {
         return MatchmakingResult{}, fmt.Errorf("no opponent found")
