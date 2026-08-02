@@ -10,6 +10,7 @@ import (
 type ArmyComposition struct {
 	TroopID  int `json:"troop_id"`
 	Quantity int `json:"quantity"`
+	PurchaseLevel  int `json:"purchase_level"`
 }
 
 type Army struct {
@@ -44,18 +45,15 @@ func CreateOrUpdateArmy(userID int, composition []ArmyComposition) error {
 
 		var refundAmount int
 		for _, comp := range oldComposition {
-			var baseCost, troopLevel int
+			var baseCost int
 			err := tx.QueryRow(
-				`SELECT td.base_cost, utd.troop_level
-				FROM troop_details td
-				JOIN user_troop_details utd ON td.troop_id = utd.troop_id
-				WHERE td.troop_id = $1 AND utd.user_id = $2`,
-				comp.TroopID, userID,
-			).Scan(&baseCost, &troopLevel)
+				`SELECT base_cost FROM troop_details WHERE troop_id = $1`,
+				comp.TroopID,
+			).Scan(&baseCost)
 			if err != nil {
 				continue
 			}
-			refundAmount += baseCost * troopLevel * comp.Quantity
+			refundAmount += baseCost * comp.PurchaseLevel * comp.Quantity 
 		}
 
 		// refund to resource2
@@ -68,7 +66,7 @@ func CreateOrUpdateArmy(userID int, composition []ArmyComposition) error {
 		}
 	}
 
-	for _, comp := range composition {
+	for i, comp := range composition {
 		var spacePerUnit, baseCost, troopLevel int
 		if comp.Quantity < 0 {
             return fmt.Errorf("invalid quantity for troop %d", comp.TroopID)
@@ -86,6 +84,7 @@ func CreateOrUpdateArmy(userID int, composition []ArmyComposition) error {
 
 		totalUnits += spacePerUnit * comp.Quantity
 		totalCost += baseCost * troopLevel * comp.Quantity
+		composition[i].PurchaseLevel = troopLevel
 	}
 
 	// check capacity
