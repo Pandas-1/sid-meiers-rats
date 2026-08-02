@@ -83,11 +83,15 @@ func NewSession(attackerID int, defenderID int) (*BattleSession, error) {
 
 	armyPool := map[int]models.Troop{}
 	for _, comp := range army.ArmyComposition {
-		details, err := models.GetTroopDetails(comp.TroopID)
+		troopLevel, err := models.GetTroopLevel(attackerID, comp.TroopID)
+		if err != nil {
+			troopLevel = 1 // fallback, same as before
+		}
+		adjustedStats, err := models.GetTroopStatsAtLevel(comp.TroopID, troopLevel)
 		if err != nil {
 			continue
 		}
-		armyPool[comp.TroopID] = details
+		armyPool[comp.TroopID] = adjustedStats 
 	}
 	buildings := []BuildingState{}
 	for _, b := range villageBuildings {
@@ -135,15 +139,10 @@ func (s *BattleSession) Tick() {
 
 	// place queued troop drops
 	for _, drop := range s.DropQueue {
-		details, ok := s.ArmyPool[drop.TroopID]
+		adjustedStats, ok := s.ArmyPool[drop.TroopID]
 		if !ok {
 			continue
 		}
-		troopLevel, err := models.GetTroopLevel(s.AttackerID, drop.TroopID)
-		if err != nil {
-			troopLevel = 1 // fallback to level 1 if not found
-		}
-		adjustedStats, _ := models.GetTroopStatsAtLevel(drop.TroopID, troopLevel)
 		s.Troops = append(s.Troops, TroopState{
 			ID:          s.NextTroopID,
 			TroopID:     drop.TroopID,
@@ -152,10 +151,10 @@ func (s *BattleSession) Tick() {
 			CurrentHP:   adjustedStats.Defence,
 			MaxHP:       adjustedStats.Defence,
 			Attack:      adjustedStats.TroopAttackPower,
-			Range:       float64(details.Range),
-			Speed:       float64(details.MovementSpeed) * 0.05,
-			Name:        details.Name,
-			ElementType: details.AttributeStrength,
+			Range:       float64(adjustedStats.Range),
+			Speed:       float64(adjustedStats.MovementSpeed) * 0.05,
+			Name:        adjustedStats.Name,
+			ElementType: adjustedStats.AttributeStrength,
 		})
 		s.NextTroopID++
 	}
